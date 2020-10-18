@@ -22,7 +22,7 @@ func writeCountyData(csvData []byte, path string) {
 		panic(err)
 	}
 
-	w.Write(strings.Split("Date,County,State,FIPS,Cases,Deaths", ","))
+	w.Write(strings.Split("Date,County,State,FIPS,Total Cases,Total Deaths", ","))
 	for _, record := range records {
 		if record[2] == "New Jersey" {
 			w.Write(record)
