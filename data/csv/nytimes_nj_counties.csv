@@ -1,4 +1,4 @@
-Date,County,State,FIPS,Cases,Deaths
+Date,County,State,FIPS,Total Cases,Total Deaths
 2020-03-04,Bergen,New Jersey,34003,1,0
 2020-03-05,Bergen,New Jersey,34003,2,0
 2020-03-06,Bergen,New Jersey,34003,3,0
