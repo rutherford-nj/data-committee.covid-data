@@ -7,10 +7,13 @@ on:
 
 jobs:
   # Get data from sources and store in repo.
-  push:
+  update_data:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      
+      - name: Write time
+        run: date
 
       - name: Fetch data
         run: cd data && go run *.go
