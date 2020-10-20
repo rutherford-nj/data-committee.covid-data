@@ -22,9 +22,7 @@ jobs:
 
       - name: Update charts
         run: |
-          pip install wheel
-          pip install -r requirements.txt
-          python3 covid.py
+          ./run.bash
 
       - name: Commit data changes
         run: |
