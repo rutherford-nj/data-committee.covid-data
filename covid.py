@@ -5,21 +5,17 @@ This is very overengineered and was done for s+g
 
 Greg Recine <greg@gregrecine.com> Oct 18 2020
 """
-from bs4 import BeautifulSoup
-import requests
-import pandas as pd
-from datetime import datetime
-from tabulate import tabulate
 import os
+import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 
-def plot_totals(x, y, title, save_plt=False):
+def plot_totals(x_data, y_data, title, save_plt=False):
     """ Brain dead routine to plot total cases
 
-    :param x: x-axis data (date list or array)
-    :param y: y-axis data (numeric list, array or list of lists)
+    :param x_data: x-axis data (date list or array)
+    :param y_data: y-axis data (numeric list, array or list of lists)
     :param title: chart title (str)
     :param save_plt: save to a file(T) or show to screen(F)
     :return: nada (fix this)
@@ -27,7 +23,7 @@ def plot_totals(x, y, title, save_plt=False):
     fig = plt.figure(figsize=(13, 9))
     ax = fig.add_subplot(1, 1, 1)
 
-    ax.plot(x, y)
+    ax.plot(x_data, y_data)
 
     ax.set_ylabel('# of cases', fontsize=20)
     my_fmt = mdates.DateFormatter('%m/%d')
@@ -45,22 +41,24 @@ def plot_totals(x, y, title, save_plt=False):
         plt.show()
 
 
-def plot_avgs(x, y_new, y_sma, y_ewma, title, save_plt=False):
+def plot_avgs(x_data, y_data, title, save_plt=False):
     """ Plot town cases and averages
 
-    :param x: date
-    :param y_new: numeric list of new cases
-    :param y_sma: numeric list of n-day SMA
-    :param y_ewma: numeric list of n-day EWMA
+    :param x_data: date
+    :param y_data: the new, sma, and ewma cases
     :param save_plt: save to a file(T) or show to screen(F)
     :param title: chart title (str)
     """
+    y_new = y_data[0]
+    y_sma = y_data[1]
+    y_ewma = y_data[2]
+
     fig = plt.figure(figsize=(13, 9))
     ax = fig.add_subplot(1, 1, 1)
 
-    ax.plot(x, y_new, color='gray', marker='o', fillstyle='none', ms=2, lw=0)
-    ax.plot(x, y_sma, 'b-')
-    ax.plot(x, y_ewma, 'y-')
+    ax.plot(x_data, y_new, color='gray', marker='o', fillstyle='none', ms=2, lw=0)
+    ax.plot(x_data, y_sma, 'b-')
+    ax.plot(x_data, y_ewma, 'y-')
 
     ax.set_ylabel('# of cases', fontsize=20)
     my_fmt = mdates.DateFormatter('%m/%d')
@@ -79,16 +77,7 @@ def plot_avgs(x, y_new, y_sma, y_ewma, title, save_plt=False):
         plt.show()
 
 
-def date_parse(s):
-    """ Convert month/day to dateimte
-
-    :return: datetime.date
-    """
-    dt = datetime.strptime(s, '%m/%d/%Y')
-    return dt.date()
-
-
-class CovidData(object):
+class CovidData:
     """
     Class that gets and massages town covid data
     """
@@ -97,25 +86,32 @@ class CovidData(object):
         """
 
         :param config:
-            pubhtml_id: pubhtml ID (2PACX-<ID>) of the sheet we're importing
+            data_files: dict of file description and file name
             population:  Rutherford 2019 population
             sma_win: sma window in days
             ewma_spn: ewma span in days
-            tab_num: index of the sheet tab to grab data from [DEFAULT: 0, first tab]
-            header_row: index of which row contains the header [DEFAULT: 1, 2nd row since 1st is blank]
-            num_cols: now many columns we are taking [DEFAULT: 3, date, total cases, new cases]
         """
 
         config = {} if config is None else config
 
-        # Info on the sheet we're importing
-        self.pubhtml_id = '1vS00GBGJKB0Xwtru3Rn5WrPqur19j--CibdM5R1tbnis0W_Bp18EmLFkJJc5sG4dwvMyqCorSVhHwik'
-        self.tab_num = 0
-        self.header_row = 1
-        self.num_cols = 3
+        # The data we're importing
+        _data_files = {'United States': 'covid_tracking_us.csv',
+                       'New Jersey': 'covid_tracking_nj.csv',
+                       'NJ Counties': 'nytimes_nj_counties.csv',
+                       'Rutherford': 'rutherford_data.csv'}
+
+        self.data_files = config.get('data_files', _data_files)
+
+        _data_dir = os.path.join(os.getcwd(), 'data', 'csv')
+        self.data_dir = config.get('data_dir', _data_dir)
+
+        # 2019 populations
+        _population = {'United States': 328.2E6,
+                       'New Jersey': 8.882E6,
+                       'NJ Counties': 932202,  # Bergen County Population
+                       'Rutherford': 18303}
 
         # Smoothing params
-        _population = 18460.0  # Rutherford 2019 population
         _sma_win = 7  # sma window in days
         _ewma_spn = 14.0  # ewma span in days
 
@@ -123,40 +119,30 @@ class CovidData(object):
         self.sma_win = config.get('sma_win', _sma_win)
         self.ewma_spn = config.get('ewma_win', _ewma_spn)
 
-    def scrape_gsheet(self):
+    def get_data(self, data_dir=None):
         """ Grab data from the google sheet and pop into a pandas dataframe
 
         :return: df: dataframe of: Date, New Cases, Total Cases
         """
-        html = requests.get(
-            'https://docs.google.com/spreadsheets/d/e/2PACX-' + self.pubhtml_id + '/pubhtml').text
-        soup = BeautifulSoup(html, "lxml")
-        tables = soup.find_all("table")
 
-        # Make the scraped data into a list of list
-        data = []
-        for table in tables:
-            row = [[td.text for td in row.find_all("td")] for row in table.find_all("tr")]
-            data.append(row)
+        data_dir = self.data_dir if data_dir is None else data_dir
 
-        # Make the list of lists into a dataframe (yeah, I could prob do this in
-        # one step above, but this works, isn't slow, and I'm lazy)
-        sheet = data[self.tab_num]
-        cols = sheet[self.header_row]
-        vals = sheet[self.header_row + 1:]
+        data_df_dict = {}
+        for key in self.data_files.keys():
+            _df = pd.read_csv(os.path.join(data_dir, self.data_files[key]), parse_dates=[0])
+            if key == 'NJ Counties':
+                _df['New Cases'] = _df.groupby('County').apply(lambda x: x['Total Cases'].diff()).reset_index(level=0,
+                                                                                                              drop=True)
+                _df.loc[_df['New Cases'].isna(), 'New Cases'] = _df['Total Cases']
 
-        df = pd.DataFrame([v[:self.num_cols] for v in vals], columns=cols[:self.num_cols])
-        df.Date = df.Date.apply(date_parse)
-        df.set_index('Date', inplace=True)
-        for c in df.columns:
-            df[c] = df[c].astype(float)
+            data_df_dict[key] = _df
 
-        return df
+        return data_df_dict
 
-    def do_smoothing(self, df, sma_win=None, ewma_spn=None, pop=None):
+    def do_smoothing(self, covid_df, sma_win=None, ewma_spn=None, pop=None):
         """
         Do n-day SMA and m-day EWMA smoothing
-        :param df: input data frame (date, total cases, new cases)
+        :param covid_df: input data frame (date, total cases, new cases)
         :param sma_win: int window for SMA
         :param ewma_spn: int span for EWMA
         :param pop: population (int) for /100K data generation
@@ -167,40 +153,43 @@ class CovidData(object):
         pop = self.population if pop is None else pop
 
         # Do smoothing with sma and ewma (unscaled and scaled)
-        df[str(sma_win) + 'd avg'] = df['New Cases'].rolling(sma_win).mean()
-        df[str(ewma_spn) + 'd ewma'] = df['New Cases'].ewm(span=ewma_spn).mean()
+        covid_df[str(sma_win) + 'd avg'] = covid_df['New Cases'].rolling(sma_win).mean()
+        covid_df[str(ewma_spn) + 'd ewma'] = covid_df['New Cases'].ewm(span=ewma_spn).mean()
 
-        df['New Cases / 100K'] = df['New Cases'] * (1.0E5 / pop)
-        df[str(sma_win) + 'd avg / 100K'] = df['New Cases / 100K'].rolling(sma_win).mean()
-        df[str(ewma_spn) + 'd ewma / 100K'] = df['New Cases / 100K'].ewm(span=ewma_spn).mean()
+        covid_df['New Cases / 100K'] = covid_df['New Cases'] * (1.0E5 / pop)
+        covid_df[str(sma_win) + 'd avg / 100K'] = covid_df['New Cases / 100K'].rolling(sma_win).mean()
+        covid_df[str(ewma_spn) + 'd ewma / 100K'] = covid_df['New Cases / 100K'].ewm(span=ewma_spn).mean()
 
-        return df
+        return covid_df
 
 
-def do_plots(covid_df, sma_win, ewma_spn, save_plt=False):
+def do_plots(covid_df, region, sma_win, ewma_spn, save_plt=False):
     """
+    :param region: region to plot
     :param covid_df: dataframe to plot
     :param sma_win: sma window in days
     :param ewma_spn: ewma span in days
     :param save_plt: save to a file(T) or show to screen(F)
     """
     # Plot #1 -- Total cases
-    plot_totals(covid_df.index, covid_df['Total Cases'],
-                'Total Confirmed COVID positive cases',
+    plot_totals(covid_df['Date'], covid_df['Total Cases'],
+                region + ': Total Confirmed COVID positive cases',
                 save_plt)
 
     # Plot #2 -- Raw & smoothed cases
-    plot_avgs(covid_df.index, covid_df['New Cases'],
-              covid_df[str(sma_win) + 'd avg'],
-              covid_df[str(ewma_spn) + 'd ewma'],
-              'Confirmed COVID positive cases',
+    y_data_list = [covid_df['New Cases'],
+                   covid_df[str(sma_win) + 'd avg'],
+                   covid_df[str(ewma_spn) + 'd ewma']]
+    plot_avgs(covid_df['Date'], y_data_list,
+              region + ': Confirmed COVID positive cases',
               save_plt)
 
     # Plot #3 -- Raw & smoothed cases / 100K people
-    plot_avgs(covid_df.index, covid_df['New Cases / 100K'],
-              covid_df[str(sma_win) + 'd avg / 100K'],
-              covid_df[str(ewma_spn) + 'd ewma / 100K'],
-              'Confirmed COVID positive cases per 100K population',
+    y_data_list = [covid_df['New Cases / 100K'],
+                   covid_df[str(sma_win) + 'd avg / 100K'],
+                   covid_df[str(ewma_spn) + 'd ewma / 100K']]
+    plot_avgs(covid_df['Date'], y_data_list,
+              region + ': Confirmed COVID positive cases per 100K population',
               save_plt)
 
 
@@ -215,9 +204,9 @@ def do_tables(covid_df, save_stats=False):
     smallest = covid_df['7d avg'].nsmallest(10, keep='first')
 
     if save_stats:
-        smallest.to_csv('smallest.csv', sep=',', mode='w')
+        pass
+        # smallest.to_csv('smallest.csv', sep=',', mode='w')
     else:
-        print(tabulate(covid_df.tail(7), headers='keys'))
         print(smallest)
 
 
@@ -226,22 +215,17 @@ def main():
     Get data and output useful stuff
     """
 
-    # Set director we're saving files in
-    # make this a input along with sma_win, ewma_span, and save flags
-    home_dir = os.environ['HOME']
-    out_dir = os.path.join(home_dir, 'Working')
-    os.chdir(out_dir)
-
     covid = CovidData()
 
     # Get data from google sheet and put into a data frame
-    covid_df = covid.scrape_gsheet()
+    covid_df_dict = covid.get_data()
 
-    covid_df = covid.do_smoothing(covid_df)
+    for key in covid_df_dict:
+        covid_df_dict[key] = covid.do_smoothing(covid_df_dict[key], pop=covid.population[key])
 
-    do_plots(covid_df, sma_win=7, ewma_spn=14.0, save_plt=True)
+        do_plots(covid_df_dict[key], region=key, sma_win=7, ewma_spn=14.0, save_plt=True)
 
-    do_tables(covid_df, save_stats=True)
+        do_tables(covid_df_dict[key], save_stats=True)
 
 
 if __name__ == "__main__":
