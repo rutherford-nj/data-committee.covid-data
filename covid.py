@@ -11,15 +11,22 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 
-def plot_totals(x_data, y_data, title, save_plt=False):
+def plot_totals(data, region, fname, title, save_plt=False):
     """ Brain dead routine to plot total cases
 
-    :param x_data: x-axis data (date list or array)
-    :param y_data: y-axis data (numeric list, array or list of lists)
+    :param data: tuple of
+            x_data: x-axis data (date list or array)
+            y_data: y-axis data (numeric list, array or list of lists)
+    :param region: area we are plotting
+    :param fname: filename suffux
     :param title: chart title (str)
     :param save_plt: save to a file(T) or show to screen(F)
     :return: nada (fix this)
     """
+
+    x_data = data[0]
+    y_data = data[1]
+
     fig = plt.figure(figsize=(13, 9))
     ax = fig.add_subplot(1, 1, 1)
 
@@ -31,24 +38,31 @@ def plot_totals(x_data, y_data, title, save_plt=False):
     plt.xticks(fontsize=16)
     plt.yticks(fontsize=16)
 
-    plt.title(title, fontsize=24)
+    plt.title(region + ': ' + title, fontsize=24)
     plt.grid()
 
     if save_plt:
-        plt.savefig(title + ".svg", format="svg")
+        plt.savefig(region + '_' + fname + ".svg", format="svg")
         plt.close()
     else:
         plt.show()
 
 
-def plot_avgs(x_data, y_data, title, save_plt=False):
+def plot_avgs(data, region, fname, title, save_plt=False):
     """ Plot town cases and averages
 
-    :param x_data: date
-    :param y_data: the new, sma, and ewma cases
-    :param save_plt: save to a file(T) or show to screen(F)
+    :param data: tuple of
+            x_data: data
+            y_data: the new, sma, and ewma cases
+    :param region: area we are plotting
+    :param fname: filename suffux
     :param title: chart title (str)
+    :param save_plt: save to a file(T) or show to screen(F)
     """
+
+    x_data = data[0]
+    y_data = data[1]
+
     y_new = y_data[0]
     y_sma = y_data[1]
     y_ewma = y_data[2]
@@ -66,12 +80,12 @@ def plot_avgs(x_data, y_data, title, save_plt=False):
     plt.xticks(fontsize=16)
     plt.yticks(fontsize=16)
 
-    plt.title(title, fontsize=24)
+    plt.title(region + ': ' + title, fontsize=24)
     plt.legend(['Cases', '7d SMA', '14d EWMA'], fontsize=16)
     plt.grid()
 
     if save_plt:
-        plt.savefig(title + ".svg", format="svg")
+        plt.savefig(region + '_' + fname + ".svg", format="svg")
         plt.close()
     else:
         plt.show()
@@ -94,11 +108,16 @@ class CovidData:
 
         config = {} if config is None else config
 
+        self.regions = {'US': 'United_States',
+                        'NJ': 'New_Jersey',
+                        'Counties': 'NJ_Counties',
+                        'Rutherford': 'Rutherford'}
+
         # The data we're importing
-        _data_files = {'United States': 'covid_tracking_us.csv',
-                       'New Jersey': 'covid_tracking_nj.csv',
-                       'NJ Counties': 'nytimes_nj_counties.csv',
-                       'Rutherford': 'rutherford_data.csv'}
+        _data_files = {self.regions['US']: 'covid_tracking_us.csv',
+                       self.regions['NJ']: 'covid_tracking_nj.csv',
+                       self.regions['Counties']: 'nytimes_nj_counties.csv',
+                       self.regions['Rutherford']: 'rutherford_data.csv'}
 
         self.data_files = config.get('data_files', _data_files)
 
@@ -106,10 +125,10 @@ class CovidData:
         self.data_dir = config.get('data_dir', _data_dir)
 
         # 2019 populations
-        _population = {'United States': 328.2E6,
-                       'New Jersey': 8.882E6,
-                       'NJ Counties': 932202,  # Bergen County Population
-                       'Rutherford': 18303}
+        _population = {self.regions['US']: 328.2E6,
+                       self.regions['NJ']: 8.882E6,
+                       self.regions['Counties']: 932202,  # Bergen County Population
+                       self.regions['Rutherford']: 18303}
 
         # Smoothing params
         _sma_win = 7  # sma window in days
@@ -130,7 +149,7 @@ class CovidData:
         data_df_dict = {}
         for key in self.data_files.keys():
             _df = pd.read_csv(os.path.join(data_dir, self.data_files[key]), parse_dates=[0])
-            if key == 'NJ Counties':
+            if key == self.regions['Counties']:
                 _df['New Cases'] = _df.groupby('County').apply(lambda x: x['Total Cases'].diff()).reset_index(level=0,
                                                                                                               drop=True)
                 _df.loc[_df['New Cases'].isna(), 'New Cases'] = _df['Total Cases']
@@ -172,24 +191,27 @@ def do_plots(covid_df, region, sma_win, ewma_spn, save_plt=False):
     :param save_plt: save to a file(T) or show to screen(F)
     """
     # Plot #1 -- Total cases
-    plot_totals(covid_df['Date'], covid_df['Total Cases'],
-                region + ': Total Confirmed COVID positive cases',
+    plot_totals((covid_df['Date'], covid_df['Total Cases']),
+                region, 'Totals',
+                'Total Confirmed COVID positive cases',
                 save_plt)
 
     # Plot #2 -- Raw & smoothed cases
     y_data_list = [covid_df['New Cases'],
                    covid_df[str(sma_win) + 'd avg'],
                    covid_df[str(ewma_spn) + 'd ewma']]
-    plot_avgs(covid_df['Date'], y_data_list,
-              region + ': Confirmed COVID positive cases',
+    plot_avgs((covid_df['Date'], y_data_list),
+              region, 'Confirmed',
+              'Confirmed COVID positive cases',
               save_plt)
 
     # Plot #3 -- Raw & smoothed cases / 100K people
     y_data_list = [covid_df['New Cases / 100K'],
                    covid_df[str(sma_win) + 'd avg / 100K'],
                    covid_df[str(ewma_spn) + 'd ewma / 100K']]
-    plot_avgs(covid_df['Date'], y_data_list,
-              region + ': Confirmed COVID positive cases per 100K population',
+    plot_avgs((covid_df['Date'], y_data_list),
+              region, 'Confirmed_per100K',
+              'Confirmed COVID positive cases per 100K population',
               save_plt)
 
 
@@ -220,10 +242,14 @@ def main():
     # Get data from google sheet and put into a data frame
     covid_df_dict = covid.get_data()
 
-    for key in covid_df_dict:
+    # Assuming root is where this script is
+    os.chdir('docs')
+
+    for region in covid.regions:
+        key = covid.regions[region]
         covid_df_dict[key] = covid.do_smoothing(covid_df_dict[key], pop=covid.population[key])
 
-        do_plots(covid_df_dict[key], region=key, sma_win=7, ewma_spn=14.0, save_plt=True)
+        do_plots(covid_df_dict[key], region=region, sma_win=7, ewma_spn=14.0, save_plt=True)
 
         do_tables(covid_df_dict[key], save_stats=True)
 
