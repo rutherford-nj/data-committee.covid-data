@@ -4,6 +4,9 @@ on:
   repository_dispatch:
     types: update-data
   workflow_dispatch:
+  push:
+    paths: 
+      - 'covid.py'
   schedule:
     - cron: '0 0 * * *'
 
