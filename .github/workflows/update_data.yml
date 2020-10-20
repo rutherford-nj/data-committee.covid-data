@@ -22,7 +22,7 @@ jobs:
 
       - name: Update charts
         run: |
-          docker run -v `pwd`:/work --entrypoint="/work/run.bash" python:3.9.0-buster
+          docker run -v `pwd`:/work --entrypoint="/work/run.bash" ghcr.io/bogosj/rutherford_covid_data_builder:latest
 
       - name: Commit data changes
         run: |
