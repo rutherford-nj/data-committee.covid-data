@@ -22,7 +22,7 @@ jobs:
 
       - name: Update charts
         run: |
-          ./run.bash
+          docker run -v `pwd`:/work --entrypoint="/work/run.bash" python:3.9.0-buster
 
       - name: Commit data changes
         run: |
