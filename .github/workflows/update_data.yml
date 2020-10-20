@@ -20,6 +20,11 @@ jobs:
       - name: Fetch data
         run: cd data && go run *.go
 
+      - name: Update charts
+        run: |
+          pip install -r requirements.txt
+          python covid.py
+
       - name: Commit data changes
         run: |
           git config user.name github-actions
