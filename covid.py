@@ -284,13 +284,13 @@ def main():
     os.chdir('docs')
 
     # plot Rutherford local data
-    plot_config = {'raw': True,
-                   'scaled': True,
-                   'debug': False}
-    region = covid_data.regions['Rutherford']
-    covid_data.do_plots(key=region, config=plot_config)
+    # plot_config = {'raw': True,
+    #                'scaled': True,
+    #                'debug': False}
+    # region = covid_data.regions['Rutherford']
+    # covid_data.do_plots(key=region, config=plot_config)
 
-    plot_config = {'raw': False,
+    plot_config = {'raw': True,
                    'scaled': True,
                    'debug': False}
     for region in covid_data.regions:
