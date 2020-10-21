@@ -42,7 +42,7 @@ def plot_totals(data, region, fname, title, save_plt=False):
     plt.grid()
 
     if save_plt:
-        plt.savefig(region + '_' + fname + ".svg", format="svg")
+        plt.savefig(fname + '_' + region + ".svg", format="svg")
         plt.close()
     else:
         plt.show()
@@ -85,7 +85,7 @@ def plot_avgs(data, region, fname, title, save_plt=False):
     plt.grid()
 
     if save_plt:
-        plt.savefig(region + '_' + fname + ".svg", format="svg")
+        plt.savefig(fname + '_' + region + ".svg", format="svg")
         plt.close()
     else:
         plt.show()
@@ -106,12 +106,20 @@ class CovidData:
             ewma_spn: ewma span in days
         """
 
+        # Set config to empty dict if not provided
         config = {} if config is None else config
 
+        # Set regions
         self.regions = {'US': 'United_States',
                         'NJ': 'New_Jersey',
                         'Counties': 'NJ_Counties',
                         'Rutherford': 'Rutherford'}
+
+        # Smoothing defaults
+        _sma_win = 7
+        _ewma_spn = 14.0
+        self.sma_win = config.get('sma_win', _sma_win)
+        self.ewma_spn = config.get('ewma_spn', _ewma_spn)
 
         # The data we're importing
         _data_files = {self.regions['US']: 'covid_tracking_us.csv',
@@ -130,15 +138,17 @@ class CovidData:
                        self.regions['Counties']: 932202,  # Bergen County Population
                        self.regions['Rutherford']: 18303}
 
-        # Smoothing params
-        _sma_win = 7  # sma window in days
-        _ewma_spn = 14.0  # ewma span in days
-
         self.population = config.get('population', _population)
-        self.sma_win = config.get('sma_win', _sma_win)
-        self.ewma_spn = config.get('ewma_win', _ewma_spn)
 
-    def get_data(self, data_dir=None):
+        # Get data from sources
+        self.data_df_dict = self._get_data()
+
+        # Do smoothing
+        for key in self.regions:
+            region = self.regions[key]
+            self.data_df_dict[region] = self.do_smoothing(self.data_df_dict[region], region)
+
+    def _get_data(self, data_dir=None):
         """ Grab data from the google sheet and pop into a pandas dataframe
 
         :return: df: dataframe of: Date, New Cases, Total Cases
@@ -158,78 +168,103 @@ class CovidData:
 
         return data_df_dict
 
-    def do_smoothing(self, covid_df, sma_win=None, ewma_spn=None, pop=None):
+    def do_smoothing(self, covid_df, region):
         """
         Do n-day SMA and m-day EWMA smoothing
         :param covid_df: input data frame (date, total cases, new cases)
-        :param sma_win: int window for SMA
-        :param ewma_spn: int span for EWMA
-        :param pop: population (int) for /100K data generation
         :return: dataframe with new columns
         """
-        sma_win = self.sma_win if sma_win is None else sma_win
-        ewma_spn = self.ewma_spn if ewma_spn is None else ewma_spn
-        pop = self.population if pop is None else pop
+        sma_win = self.sma_win
+        ewma_spn = self.ewma_spn
+        population = self.population[region]
 
         # Do smoothing with sma and ewma (unscaled and scaled)
         covid_df[str(sma_win) + 'd avg'] = covid_df['New Cases'].rolling(sma_win).mean()
         covid_df[str(ewma_spn) + 'd ewma'] = covid_df['New Cases'].ewm(span=ewma_spn).mean()
 
-        covid_df['New Cases / 100K'] = covid_df['New Cases'] * (1.0E5 / pop)
+        covid_df['New Cases / 100K'] = covid_df['New Cases'] * (1.0E5 / population)
         covid_df[str(sma_win) + 'd avg / 100K'] = covid_df['New Cases / 100K'].rolling(sma_win).mean()
         covid_df[str(ewma_spn) + 'd ewma / 100K'] = covid_df['New Cases / 100K'].ewm(span=ewma_spn).mean()
 
         return covid_df
 
+    def do_plots(self, key, config):
+        """
+        :param covid_data: covid data class
+        :param key: region to plot
+        :param config [dict]
+                total:
+                averages:
+                raw:
+                scaled:
+                debug: save to a file(F) or show to screen(T)
+        """
 
-def do_plots(covid_df, region, sma_win, ewma_spn, save_plt=False):
-    """
-    :param region: region to plot
-    :param covid_df: dataframe to plot
-    :param sma_win: sma window in days
-    :param ewma_spn: ewma span in days
-    :param save_plt: save to a file(T) or show to screen(F)
-    """
-    # Plot #1 -- Total cases
-    plot_totals((covid_df['Date'], covid_df['Total Cases']),
-                region, 'Totals',
-                'Total Confirmed COVID positive cases',
-                save_plt)
+        do_total = config.get('total', True)
+        do_avgs = config.get('averages', True)
+        do_raw = config.get('raw', True)
+        do_scaled = config.get('scaled', True)
+        debug = config.get('debug', True)
 
-    # Plot #2 -- Raw & smoothed cases
-    y_data_list = [covid_df['New Cases'],
-                   covid_df[str(sma_win) + 'd avg'],
-                   covid_df[str(ewma_spn) + 'd ewma']]
-    plot_avgs((covid_df['Date'], y_data_list),
-              region, 'Confirmed',
-              'Confirmed COVID positive cases',
-              save_plt)
+        save_plt = not debug
 
-    # Plot #3 -- Raw & smoothed cases / 100K people
-    y_data_list = [covid_df['New Cases / 100K'],
-                   covid_df[str(sma_win) + 'd avg / 100K'],
-                   covid_df[str(ewma_spn) + 'd ewma / 100K']]
-    plot_avgs((covid_df['Date'], y_data_list),
-              region, 'Confirmed_per100K',
-              'Confirmed COVID positive cases per 100K population',
-              save_plt)
+        region = self.regions[key]
 
+        covid_df = self.data_df_dict[region]
+        sma_win = self.sma_win
+        ewma_spn = self.ewma_spn
 
-def do_tables(covid_df, save_stats=False):
-    """ Print some tabular information of stats
+        # Plot #1 -- Total cases
+        if do_total:
+            if do_raw:
+                plot_totals((covid_df['Date'], covid_df['Total Cases']),
+                            region, 'Totals',
+                            'Total Confirmed COVID positive cases',
+                            save_plt)
 
-    :param covid_df:
-    :param covid_df: covid data
-    :param save_stats: save to a file(T) or show to screen(F)
-    """
+        # Plot -- Raw & smoothed cases
+        if do_avgs:
+            if do_raw:
+                y_data_list = [covid_df['New Cases'],
+                               covid_df[str(sma_win) + 'd avg'],
+                               covid_df[str(ewma_spn) + 'd ewma']]
+                plot_avgs((covid_df['Date'], y_data_list),
+                          region, 'Confirmed',
+                          'Confirmed COVID positive cases',
+                          save_plt)
 
-    smallest = covid_df['7d avg'].nsmallest(10, keep='first')
+            if do_scaled:
+                # Plot -- Raw & smoothed cases / 100K people
+                y_data_list = [covid_df['New Cases / 100K'],
+                               covid_df[str(sma_win) + 'd avg / 100K'],
+                               covid_df[str(ewma_spn) + 'd ewma / 100K']]
+                plot_avgs((covid_df['Date'], y_data_list),
+                          region, 'Confirmed_per100K',
+                          'Confirmed COVID positive cases per 100K population',
+                          save_plt)
 
-    if save_stats:
-        pass
-        # smallest.to_csv('smallest.csv', sep=',', mode='w')
-    else:
-        print(smallest)
+    def do_tables(self, key, config):
+        """ Print some tabular information of stats
+
+        :param covid_data: covid data class
+        :param region: region to plot
+        :param save_stats: save to a file(T) or show to screen(F)
+        """
+        debug = config.get('debug', True)
+
+        save_stats = not debug
+
+        region = self.regions[key]
+
+        covid_df = self.data_df_dict[region]
+
+        smallest = covid_df['7d avg'].nsmallest(10, keep='first')
+
+        if save_stats:
+            pass
+            # smallest.to_csv('smallest.csv', sep=',', mode='w')
+        else:
+            print(smallest)
 
 
 def main():
@@ -237,21 +272,30 @@ def main():
     Get data and output useful stuff
     """
 
-    covid = CovidData()
+    # Init covid class
+    sma_win = 7
+    ewma_span = 14.0
+    data_config = {'sma_win': sma_win,
+                   'ewma_spn': ewma_span}
 
-    # Get data from google sheet and put into a data frame
-    covid_df_dict = covid.get_data()
+    covid_data = CovidData(data_config)
 
-    # Assuming root is where this script is
+    # Dir to write output to (assuming root is where this script is)
     os.chdir('docs')
 
-    for region in covid.regions:
-        key = covid.regions[region]
-        covid_df_dict[key] = covid.do_smoothing(covid_df_dict[key], pop=covid.population[key])
+    # plot Rutherford local data
+    plot_config = {'raw': True,
+                   'scaled': True,
+                   'debug': False}
+    region = covid_data.regions['Rutherford']
+    covid_data.do_plots(key=region, config=plot_config)
 
-        do_plots(covid_df_dict[key], region=region, sma_win=7, ewma_spn=14.0, save_plt=True)
-
-        do_tables(covid_df_dict[key], save_stats=True)
+    plot_config = {'raw': False,
+                   'scaled': True,
+                   'debug': False}
+    for region in covid_data.regions:
+        covid_data.do_plots(key=region, config=plot_config)
+        covid_data.do_tables(key=region, config=plot_config)
 
 
 if __name__ == "__main__":
