@@ -25,7 +25,7 @@ jobs:
 
       - name: Update charts
         run: |
-          docker build -t rutherford_covid_image
+          docker build -t rutherford_covid_image .
           docker run -v `pwd`:/work --entrypoint="/work/run.bash" rutherford_covid_image
 
       - name: Commit data changes
