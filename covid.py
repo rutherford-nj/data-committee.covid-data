@@ -80,7 +80,7 @@ class CovidData:
             self.data_df_dict[region] = self.do_smoothing(self.data_df_dict[region], region)
 
         # Set up ploting defaults
-        color_blind = ['#FF800E', '#ABABAB', '#595959', '#A2C8EC', '#006BA4']
+        color_blind = ['#FF800E', '#595959', '#A2C8EC', '#006BA4']
 
         sns.set(rc={
             'axes.axisbelow': False,
@@ -174,7 +174,7 @@ class CovidData:
 
             ax.plot(us_df['Date'], us_df[str(self.sma_win) + 'd avg / 100K'])
             ax.plot(nj_df['Date'], nj_df[str(self.sma_win) + 'd avg / 100K'])
-            ax.plot(ct_df['Date'], ct_df[str(self.sma_win) + 'd avg / 100K'])
+            # ax.plot(ct_df['Date'], ct_df[str(self.sma_win) + 'd avg / 100K'])
             ax.plot(bc_df['Date'], bc_df[str(self.sma_win) + 'd avg / 100K'])
             ax.plot(rf_df['Date'], rf_df[str(self.sma_win) + 'd avg / 100K'])
 
@@ -185,7 +185,7 @@ class CovidData:
                        'title': 'New Cases / 100K residents -- ' + str(self.sma_win) + ' day average',
                        'legend': ['United States',
                                   'New Jersey',
-                                  'Other Counties',
+                                  # 'Other Counties',
                                   'Bergen County',
                                   'Rutherford']
                        }
@@ -201,7 +201,7 @@ class CovidData:
 
             ax.plot(us_df['Date'], us_df[str(self.ewma_spn) + 'd ewma / 100K'])
             ax.plot(nj_df['Date'], nj_df[str(self.ewma_spn) + 'd ewma / 100K'])
-            ax.plot(ct_df['Date'], ct_df[str(self.ewma_spn) + 'd ewma / 100K'])
+            # ax.plot(ct_df['Date'], ct_df[str(self.ewma_spn) + 'd ewma / 100K'])
             ax.plot(bc_df['Date'], bc_df[str(self.ewma_spn) + 'd ewma / 100K'])
             ax.plot(rf_df['Date'], rf_df[str(self.ewma_spn) + 'd ewma / 100K'])
 
@@ -212,7 +212,7 @@ class CovidData:
                        'title': 'New Cases / 100K residents -- ' + str(self.ewma_spn) + ' day weighted average',
                        'legend': ['United States',
                                   'New Jersey',
-                                  'Other Counties',
+                                  # 'Other Counties',
                                   'Bergen County',
                                   'Rutherford']
                        }
@@ -228,7 +228,7 @@ class CovidData:
 
             ax.plot(us_df['Date'], us_df['Total Cases / 100K'])
             ax.plot(nj_df['Date'], nj_df['Total Cases / 100K'])
-            ax.plot(ct_df['Date'], ct_df['Total Cases / 100K'])
+            # ax.plot(ct_df['Date'], ct_df['Total Cases / 100K'])
             ax.plot(bc_df['Date'], bc_df['Total Cases / 100K'])
             ax.plot(rf_df['Date'], rf_df['Total Cases / 100K'])
 
@@ -239,7 +239,7 @@ class CovidData:
                        'title': 'Total cases / 100K residents',
                        'legend': ['United States',
                                   'New Jersey',
-                                  'Other Counties',
+                                  # 'Other Counties',
                                   'Bergen County',
                                   'Rutherford']
                        }
@@ -255,7 +255,7 @@ class CovidData:
 
             ax.plot(us_df['Date'], us_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
             ax.plot(nj_df['Date'], nj_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
-            ax.plot(ct_df['Date'], ct_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
+            # ax.plot(ct_df['Date'], ct_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
             ax.plot(bc_df['Date'], bc_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
             ax.plot(rf_df['Date'], rf_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
 
@@ -266,7 +266,7 @@ class CovidData:
                        'title': 'Total cases / 100K residents -- ' + str(self.sma_win) + ' day average',
                        'legend': ['United States',
                                   'New Jersey',
-                                  'Other Counties',
+                                  # 'Other Counties',
                                   'Bergen County',
                                   'Rutherford']
                        }
