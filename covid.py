@@ -150,110 +150,112 @@ class CovidData:
         ewma_spn = self.ewma_spn
 
         # All New Cases Scaled by SMA
-        def all_cases_scaled_sma(ax):
-            us_df = self.data_df_dict[self.regions['US']]
-            nj_df = self.data_df_dict[self.regions['NJ']]
-            ct_df = self.data_df_dict[self.regions['Counties']]
-            bc_df = self.data_df_dict[self.regions['Bergen']]
-            rf_df = self.data_df_dict[self.regions['Rutherford']]
+        if config['do_new_norm_sma']:
+            def all_cases_scaled_sma(ax):
+                us_df = self.data_df_dict[self.regions['US']]
+                nj_df = self.data_df_dict[self.regions['NJ']]
+                ct_df = self.data_df_dict[self.regions['Counties']]
+                bc_df = self.data_df_dict[self.regions['Bergen']]
+                rf_df = self.data_df_dict[self.regions['Rutherford']]
 
-            ax.plot(us_df['Date'], us_df[str(sma_win) + 'd avg / 100K'])
-            ax.plot(nj_df['Date'], nj_df[str(sma_win) + 'd avg / 100K'])
-            ax.plot(ct_df['Date'], ct_df[str(sma_win) + 'd avg / 100K'])
-            ax.plot(bc_df['Date'], bc_df[str(sma_win) + 'd avg / 100K'])
-            ax.plot(rf_df['Date'], rf_df[str(sma_win) + 'd avg / 100K'])
+                ax.plot(us_df['Date'], us_df[str(sma_win) + 'd avg / 100K'])
+                ax.plot(nj_df['Date'], nj_df[str(sma_win) + 'd avg / 100K'])
+                ax.plot(ct_df['Date'], ct_df[str(sma_win) + 'd avg / 100K'])
+                ax.plot(bc_df['Date'], bc_df[str(sma_win) + 'd avg / 100K'])
+                ax.plot(rf_df['Date'], rf_df[str(sma_win) + 'd avg / 100K'])
 
-            return ax
-
-        plot_config = {'plot_fn': all_cases_scaled_sma,
-                       'fname': 'Totals_' + str(sma_win) + 'D_SMA_per_100K',
-                       'title': str(sma_win) + ' day average / 100K residents',
-                       'legend': ['United States',
-                                  'New Jersey',
-                                  'Other Counties',
-                                  'Bergen County',
-                                  'Rutherford']
-                       }
-        self.make_plot(plot_config)
+                return ax
+            plot_config = {'plot_fn': all_cases_scaled_sma,
+                           'fname': 'New_Cases_per_100K_' + str(sma_win) + 'D_SMA',
+                           'title': 'New Cases / 100K residents -- ' + str(sma_win) + ' day average',
+                           'legend': ['United States',
+                                      'New Jersey',
+                                      'Other Counties',
+                                      'Bergen County',
+                                      'Rutherford']
+                           }
+            self.make_plot(plot_config)
 
         # All New Cases Scaled by EWMA
-        def all_cases_scaled_ewma(ax):
-            us_df = self.data_df_dict[self.regions['US']]
-            nj_df = self.data_df_dict[self.regions['NJ']]
-            ct_df = self.data_df_dict[self.regions['Counties']]
-            bc_df = self.data_df_dict[self.regions['Bergen']]
-            rf_df = self.data_df_dict[self.regions['Rutherford']]
+        if config['do_new_norm_ewma']:
+            def all_cases_scaled_ewma(ax):
+                us_df = self.data_df_dict[self.regions['US']]
+                nj_df = self.data_df_dict[self.regions['NJ']]
+                ct_df = self.data_df_dict[self.regions['Counties']]
+                bc_df = self.data_df_dict[self.regions['Bergen']]
+                rf_df = self.data_df_dict[self.regions['Rutherford']]
 
-            ax.plot(us_df['Date'], us_df[str(ewma_spn) + 'd ewma / 100K'])
-            ax.plot(nj_df['Date'], nj_df[str(ewma_spn) + 'd ewma / 100K'])
-            ax.plot(ct_df['Date'], ct_df[str(ewma_spn) + 'd ewma / 100K'])
-            ax.plot(bc_df['Date'], bc_df[str(ewma_spn) + 'd ewma / 100K'])
-            ax.plot(rf_df['Date'], rf_df[str(ewma_spn) + 'd ewma / 100K'])
+                ax.plot(us_df['Date'], us_df[str(ewma_spn) + 'd ewma / 100K'])
+                ax.plot(nj_df['Date'], nj_df[str(ewma_spn) + 'd ewma / 100K'])
+                ax.plot(ct_df['Date'], ct_df[str(ewma_spn) + 'd ewma / 100K'])
+                ax.plot(bc_df['Date'], bc_df[str(ewma_spn) + 'd ewma / 100K'])
+                ax.plot(rf_df['Date'], rf_df[str(ewma_spn) + 'd ewma / 100K'])
 
-            return ax
-
-        plot_config = {'plot_fn': all_cases_scaled_ewma,
-                       'fname': 'Totals_' + str(ewma_spn) + 'D_EWMA_per_100K',
-                       'title': str(ewma_spn) + ' day weighted average / 100K residents',
-                       'legend': ['United States',
-                                  'New Jersey',
-                                  'Other Counties',
-                                  'Bergen County',
-                                  'Rutherford']
-                       }
-        self.make_plot(plot_config)
+                return ax
+            plot_config = {'plot_fn': all_cases_scaled_ewma,
+                           'fname': 'New_Cases_per_100K_' + str(ewma_spn) + 'D_EWMA',
+                           'title': 'New Cases / 100K residents -- ' + str(ewma_spn) + ' day weighted average',
+                           'legend': ['United States',
+                                      'New Jersey',
+                                      'Other Counties',
+                                      'Bergen County',
+                                      'Rutherford']
+                           }
+            self.make_plot(plot_config)
 
         # Total New Cases Scaled
-        def total_cases_scaled(ax):
-            us_df = self.data_df_dict[self.regions['US']]
-            nj_df = self.data_df_dict[self.regions['NJ']]
-            ct_df = self.data_df_dict[self.regions['Counties']]
-            bc_df = self.data_df_dict[self.regions['Bergen']]
-            rf_df = self.data_df_dict[self.regions['Rutherford']]
+        if config['do_totals_norm']:
+            def total_cases_scaled(ax):
+                us_df = self.data_df_dict[self.regions['US']]
+                nj_df = self.data_df_dict[self.regions['NJ']]
+                ct_df = self.data_df_dict[self.regions['Counties']]
+                bc_df = self.data_df_dict[self.regions['Bergen']]
+                rf_df = self.data_df_dict[self.regions['Rutherford']]
 
-            ax.plot(us_df['Date'], us_df['Total Cases / 100K'])
-            ax.plot(nj_df['Date'], nj_df['Total Cases / 100K'])
-            ax.plot(ct_df['Date'], ct_df['Total Cases / 100K'])
-            ax.plot(bc_df['Date'], bc_df['Total Cases / 100K'])
-            ax.plot(rf_df['Date'], rf_df['Total Cases / 100K'])
+                ax.plot(us_df['Date'], us_df['Total Cases / 100K'])
+                ax.plot(nj_df['Date'], nj_df['Total Cases / 100K'])
+                ax.plot(ct_df['Date'], ct_df['Total Cases / 100K'])
+                ax.plot(bc_df['Date'], bc_df['Total Cases / 100K'])
+                ax.plot(rf_df['Date'], rf_df['Total Cases / 100K'])
 
-            return ax
-        plot_config = {'plot_fn': total_cases_scaled,
-                       'fname': 'Totals_cases_per_100K',
-                       'title': 'Total cases / 100K residents',
-                       'legend': ['United States',
-                                  'New Jersey',
-                                  'Other Counties',
-                                  'Bergen County',
-                                  'Rutherford']
-                       }
-        self.make_plot(plot_config)
+                return ax
+            plot_config = {'plot_fn': total_cases_scaled,
+                           'fname': 'Totals_cases_per_100K',
+                           'title': 'Total cases / 100K residents',
+                           'legend': ['United States',
+                                      'New Jersey',
+                                      'Other Counties',
+                                      'Bergen County',
+                                      'Rutherford']
+                           }
+            self.make_plot(plot_config)
 
         # Total New Cases Scaled by SMA
-        def total_cases_scaled_sma(ax):
-            us_df = self.data_df_dict[self.regions['US']]
-            nj_df = self.data_df_dict[self.regions['NJ']]
-            ct_df = self.data_df_dict[self.regions['Counties']]
-            bc_df = self.data_df_dict[self.regions['Bergen']]
-            rf_df = self.data_df_dict[self.regions['Rutherford']]
+        if config['do_totals_norm_sma']:
+            def total_cases_scaled_sma(ax):
+                us_df = self.data_df_dict[self.regions['US']]
+                nj_df = self.data_df_dict[self.regions['NJ']]
+                ct_df = self.data_df_dict[self.regions['Counties']]
+                bc_df = self.data_df_dict[self.regions['Bergen']]
+                rf_df = self.data_df_dict[self.regions['Rutherford']]
 
-            ax.plot(us_df['Date'], us_df[str(sma_win) + 'd avg Total Cases / 100K'])
-            ax.plot(nj_df['Date'], nj_df[str(sma_win) + 'd avg Total Cases / 100K'])
-            ax.plot(ct_df['Date'], ct_df[str(sma_win) + 'd avg Total Cases / 100K'])
-            ax.plot(bc_df['Date'], bc_df[str(sma_win) + 'd avg Total Cases / 100K'])
-            ax.plot(rf_df['Date'], rf_df[str(sma_win) + 'd avg Total Cases / 100K'])
+                ax.plot(us_df['Date'], us_df[str(sma_win) + 'd avg Total Cases / 100K'])
+                ax.plot(nj_df['Date'], nj_df[str(sma_win) + 'd avg Total Cases / 100K'])
+                ax.plot(ct_df['Date'], ct_df[str(sma_win) + 'd avg Total Cases / 100K'])
+                ax.plot(bc_df['Date'], bc_df[str(sma_win) + 'd avg Total Cases / 100K'])
+                ax.plot(rf_df['Date'], rf_df[str(sma_win) + 'd avg Total Cases / 100K'])
 
-            return ax
-        plot_config = {'plot_fn': total_cases_scaled_sma,
-                       'fname': 'Totals_cases_per_100K_SMA',
-                       'title': 'Total cases / 100K residents -- ' + str(sma_win) + ' day average',
-                       'legend': ['United States',
-                                  'New Jersey',
-                                  'Other Counties',
-                                  'Bergen County',
-                                  'Rutherford']
-                       }
-        self.make_plot(plot_config)
+                return ax
+            plot_config = {'plot_fn': total_cases_scaled_sma,
+                           'fname': 'Totals_cases_per_100K_'+ str(sma_win) +'D_SMA',
+                           'title': 'Total cases / 100K residents -- ' + str(sma_win) + ' day average',
+                           'legend': ['United States',
+                                      'New Jersey',
+                                      'Other Counties',
+                                      'Bergen County',
+                                      'Rutherford']
+                           }
+            self.make_plot(plot_config)
 
         #
         # # Plot #1 -- Total cases
@@ -364,7 +366,13 @@ def main():
     # Dir to write output to (assuming root is where this script is)
     os.chdir('docs')
 
-    covid_data.do_plots(key=None, config={'debug': False})
+    plot_config = {'do_new_norm_sma': True,
+                   'do_new_norm_ewma': False,
+                   'do_totals_norm': False,
+                   'do_totals_norm_sma': True,
+                   'debug': False
+                   }
+    covid_data.do_plots(key=None, config=plot_config)
 
     # plot_config = {'raw': True,
     #                'scaled': True,
