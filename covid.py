@@ -166,7 +166,7 @@ class CovidData:
 
                 return ax
             plot_config = {'plot_fn': all_cases_scaled_sma,
-                           'fname': 'New_Cases_per_100K_' + str(sma_win) + 'D_SMA',
+                           'fname': 'new_cases_per_100K_' + str(sma_win) + 'd_SMA',
                            'title': 'New Cases / 100K residents -- ' + str(sma_win) + ' day average',
                            'legend': ['United States',
                                       'New Jersey',
@@ -193,7 +193,7 @@ class CovidData:
 
                 return ax
             plot_config = {'plot_fn': all_cases_scaled_ewma,
-                           'fname': 'New_Cases_per_100K_' + str(ewma_spn) + 'D_EWMA',
+                           'fname': 'new_cases_per_100K_' + str(ewma_spn) + 'd_EWMA',
                            'title': 'New Cases / 100K residents -- ' + str(ewma_spn) + ' day weighted average',
                            'legend': ['United States',
                                       'New Jersey',
@@ -220,7 +220,7 @@ class CovidData:
 
                 return ax
             plot_config = {'plot_fn': total_cases_scaled,
-                           'fname': 'Totals_cases_per_100K',
+                           'fname': 'total_cases_per_100K',
                            'title': 'Total cases / 100K residents',
                            'legend': ['United States',
                                       'New Jersey',
@@ -247,7 +247,7 @@ class CovidData:
 
                 return ax
             plot_config = {'plot_fn': total_cases_scaled_sma,
-                           'fname': 'Totals_cases_per_100K_'+ str(sma_win) +'D_SMA',
+                           'fname': 'total_cases_per_100K_'+ str(sma_win) +'d_SMA',
                            'title': 'Total cases / 100K residents -- ' + str(sma_win) + ' day average',
                            'legend': ['United States',
                                       'New Jersey',
