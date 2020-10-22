@@ -80,7 +80,8 @@ class CovidData:
             self.data_df_dict[region] = self.do_smoothing(self.data_df_dict[region], region)
 
         # Set up ploting defaults
-        color_palette = ['#009E73', '#F0E442', '#0072B2', '#D55E00']
+        # Black, Green, Orange, Blue
+        color_palette = ['#000000', '#009E73', '#D55E00', '#0072B2']
 
         sns.set(rc={
             'axes.axisbelow': False,
