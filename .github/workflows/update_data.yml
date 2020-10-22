@@ -25,7 +25,8 @@ jobs:
 
       - name: Update charts
         run: |
-          docker run -v `pwd`:/work --entrypoint="/work/run.bash" ghcr.io/bogosj/rutherford_covid_data_builder:latest
+          docker build -t rutherford_covid_image
+          docker run -v `pwd`:/work --entrypoint="/work/run.bash" rutherford_covid_image
 
       - name: Commit data changes
         run: |
