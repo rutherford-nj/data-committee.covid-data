@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Write time
-        run: date
+        run: TZ=America/New_York date +"%A %B %d - %I:%M%P" | tee docs/last_updated
 
       - name: Fetch data
         run: cd data && go run *.go
