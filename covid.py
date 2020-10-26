@@ -12,6 +12,7 @@ import matplotlib.dates as mdates
 import seaborn as sns
 from cycler import cycler
 
+
 # pylint: disable=R0902
 # I have 8/7 instance attributes, need to refactor?
 class CovidData:
@@ -111,6 +112,12 @@ class CovidData:
                                         "axes.titlesize": 20,
                                         "axes.labelsize": 18})
 
+        self.us_df = self.data_df_dict[self.regions['US']]
+        self.nj_df = self.data_df_dict[self.regions['NJ']]
+        self.ct_df = self.data_df_dict[self.regions['Counties']]
+        self.bc_df = self.data_df_dict[self.regions['Bergen']]
+        self.rf_df = self.data_df_dict[self.regions['Rutherford']]
+
     def _get_data(self, data_dir=None):
         """ Grab data from the google sheet and pop into a pandas dataframe
 
@@ -163,20 +170,43 @@ class CovidData:
 
         return covid_df
 
+    def local_new_and_total(self):
+        """ Plot Rutherford local and total case numbers
+
+        :return: nothing, creates plot
+        """
+
+        # New and local cases for Rutheford
+        def _plot_fn(ax):
+            _df = self.rf_df
+            ax.plot(_df['Date'], _df['New Cases'])
+            # ax2 = ax.twinx()
+            # ax2.plot(_df['Date'], _df['Total Cases'], color='black')
+            ax.plot(_df['Date'], _df['Total Cases'], color='black')
+
+            return ax
+
+        plot_config = {'plot_fn': _plot_fn,
+                       'fname': 'new_and_total_cases_Rutherford',
+                       'title': 'Rutherford Covid Cases',
+                       'legend': ['Daily Cases',
+                                  'Total Cases']
+                       }
+        self.make_plot(plot_config)
+
     def new_cases_scaled_sma(self):
+        """ Plots new cases SMA across regions, scaled per 100K pop
+
+        :return: nothing, creates plot
+        """
+
         # All New Cases Scaled by SMA
         def _new_cases_scaled_sma(ax):
-            us_df = self.data_df_dict[self.regions['US']]
-            nj_df = self.data_df_dict[self.regions['NJ']]
-            ct_df = self.data_df_dict[self.regions['Counties']]
-            bc_df = self.data_df_dict[self.regions['Bergen']]
-            rf_df = self.data_df_dict[self.regions['Rutherford']]
-
-            ax.plot(us_df['Date'], us_df[str(self.sma_win) + 'd avg / 100K'])
-            ax.plot(nj_df['Date'], nj_df[str(self.sma_win) + 'd avg / 100K'])
-            # ax.plot(ct_df['Date'], ct_df[str(self.sma_win) + 'd avg / 100K'])
-            ax.plot(bc_df['Date'], bc_df[str(self.sma_win) + 'd avg / 100K'])
-            ax.plot(rf_df['Date'], rf_df[str(self.sma_win) + 'd avg / 100K'])
+            ax.plot(self.us_df['Date'], self.us_df[str(self.sma_win) + 'd avg / 100K'])
+            ax.plot(self.nj_df['Date'], self.nj_df[str(self.sma_win) + 'd avg / 100K'])
+            # ax.plot(self.ct_df['Date'], self.ct_df[str(self.sma_win) + 'd avg / 100K'])
+            ax.plot(self.bc_df['Date'], self.bc_df[str(self.sma_win) + 'd avg / 100K'])
+            ax.plot(self.rf_df['Date'], self.rf_df[str(self.sma_win) + 'd avg / 100K'])
 
             return ax
 
@@ -192,18 +222,17 @@ class CovidData:
         self.make_plot(plot_config)
 
     def new_cases_scaled_ewma(self):
-        def _new_cases_scaled_ewma(ax):
-            us_df = self.data_df_dict[self.regions['US']]
-            nj_df = self.data_df_dict[self.regions['NJ']]
-            ct_df = self.data_df_dict[self.regions['Counties']]
-            bc_df = self.data_df_dict[self.regions['Bergen']]
-            rf_df = self.data_df_dict[self.regions['Rutherford']]
+        """ Plots new cases EWMA across regions, scaled per 100K pop
 
-            ax.plot(us_df['Date'], us_df[str(self.ewma_spn) + 'd ewma / 100K'])
-            ax.plot(nj_df['Date'], nj_df[str(self.ewma_spn) + 'd ewma / 100K'])
-            # ax.plot(ct_df['Date'], ct_df[str(self.ewma_spn) + 'd ewma / 100K'])
-            ax.plot(bc_df['Date'], bc_df[str(self.ewma_spn) + 'd ewma / 100K'])
-            ax.plot(rf_df['Date'], rf_df[str(self.ewma_spn) + 'd ewma / 100K'])
+        :return: nothing, creates plot
+        """
+
+        def _new_cases_scaled_ewma(ax):
+            ax.plot(self.us_df['Date'], self.us_df[str(self.ewma_spn) + 'd ewma / 100K'])
+            ax.plot(self.nj_df['Date'], self.nj_df[str(self.ewma_spn) + 'd ewma / 100K'])
+            # ax.plot(self.ct_df['Date'], self.ct_df[str(self.ewma_spn) + 'd ewma / 100K'])
+            ax.plot(self.bc_df['Date'], self.bc_df[str(self.ewma_spn) + 'd ewma / 100K'])
+            ax.plot(self.rf_df['Date'], self.rf_df[str(self.ewma_spn) + 'd ewma / 100K'])
 
             return ax
 
@@ -219,18 +248,17 @@ class CovidData:
         self.make_plot(plot_config)
 
     def total_cases_scaled(self):
-        def _total_cases_scaled(ax):
-            us_df = self.data_df_dict[self.regions['US']]
-            nj_df = self.data_df_dict[self.regions['NJ']]
-            ct_df = self.data_df_dict[self.regions['Counties']]
-            bc_df = self.data_df_dict[self.regions['Bergen']]
-            rf_df = self.data_df_dict[self.regions['Rutherford']]
+        """ Plots total cases across regions, scaled per 100K pop
 
-            ax.plot(us_df['Date'], us_df['Total Cases / 100K'])
-            ax.plot(nj_df['Date'], nj_df['Total Cases / 100K'])
-            # ax.plot(ct_df['Date'], ct_df['Total Cases / 100K'])
-            ax.plot(bc_df['Date'], bc_df['Total Cases / 100K'])
-            ax.plot(rf_df['Date'], rf_df['Total Cases / 100K'])
+        :return: nothing, creates plot
+        """
+
+        def _total_cases_scaled(ax):
+            ax.plot(self.us_df['Date'], self.us_df['Total Cases / 100K'])
+            ax.plot(self.nj_df['Date'], self.nj_df['Total Cases / 100K'])
+            # ax.plot(self.ct_df['Date'], self.ct_df['Total Cases / 100K'])
+            ax.plot(self.bc_df['Date'], self.bc_df['Total Cases / 100K'])
+            ax.plot(self.rf_df['Date'], self.rf_df['Total Cases / 100K'])
 
             return ax
 
@@ -246,18 +274,17 @@ class CovidData:
         self.make_plot(plot_config)
 
     def total_cases_scaled_sma(self):
-        def _total_cases_scaled_sma(ax):
-            us_df = self.data_df_dict[self.regions['US']]
-            nj_df = self.data_df_dict[self.regions['NJ']]
-            ct_df = self.data_df_dict[self.regions['Counties']]
-            bc_df = self.data_df_dict[self.regions['Bergen']]
-            rf_df = self.data_df_dict[self.regions['Rutherford']]
+        """ Plots total cases across regions, scaled per 100K pop
 
-            ax.plot(us_df['Date'], us_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
-            ax.plot(nj_df['Date'], nj_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
-            # ax.plot(ct_df['Date'], ct_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
-            ax.plot(bc_df['Date'], bc_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
-            ax.plot(rf_df['Date'], rf_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
+        :return: nothing, creates plot
+        """
+
+        def _total_cases_scaled_sma(ax):
+            ax.plot(self.us_df['Date'], self.us_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
+            ax.plot(self.nj_df['Date'], self.nj_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
+            # ax.plot(ct_df['Date'], self.ct_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
+            ax.plot(self.bc_df['Date'], self.bc_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
+            ax.plot(self.rf_df['Date'], self.rf_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
 
             return ax
 
@@ -320,25 +347,18 @@ class CovidData:
     #             plot_config['title'] = 'Confirmed COVID positive cases per 100K population'
     #             self.make_plot(plot_config, save_plt)
 
-    def do_tables(self, key, config):
-        """ Print some tabular information of stats
+    def do_tables(self, config=None):
+        """ TODO: Print some tabular information of stats
 
-        :param key: region to plot
-        :param config: save to a file(T) or show to screen(F)
+        :param config: Dict TBD
         """
-        debug = config.get('debug', True)
 
-        region = self.regions[key]
-
-        covid_df = self.data_df_dict[region]
-
-        smallest = covid_df['7d avg'].nsmallest(10, keep='first')
+        config = {} if config is None else config
 
         if self.debug:
-            print(smallest)
+            print('stats here')
         else:
             pass
-            # smallest.to_csv('smallest.csv', sep=',', mode='w')
 
     def make_plot(self, config):
         """ Plot town cases and averages
@@ -384,16 +404,17 @@ def main():
     sma_win = 14
     ewma_span = 14  # spn=29, com=14 | spn=15, com=7
     data_config = {
-                   'sma_win': sma_win,
-                   'ewma_spn': ewma_span,
-                   'debug': False
-                   }
+        'sma_win': sma_win,
+        'ewma_spn': ewma_span,
+        'debug': False
+    }
 
     # Lazy way to turn plots on and off (can be args later)
-    do_new_norm_sma = True              # All New Cases Scaled by SMA
-    do_new_norm_ewma = False            # All New Cases Scaled by EWMA
-    do_totals_norm = False              # Total New Cases Scaled
-    do_totals_norm_sma = True           # Total New Cases Scaled by SMA
+    do_new_norm_sma = True  # All New Cases Scaled by SMA
+    do_new_norm_ewma = False  # All New Cases Scaled by EWMA
+    do_totals_norm = False  # Total New Cases Scaled
+    do_totals_norm_sma = True  # Total New Cases Scaled by SMA
+    do_local_combo = False  # Rutherford new and total cases, unscaled
 
     # Init class
     covid_data = CovidData(data_config)
@@ -412,6 +433,10 @@ def main():
 
     if do_totals_norm_sma:
         covid_data.total_cases_scaled_sma()
+
+    if do_local_combo:
+        covid_data.local_new_and_total()
+
 
 if __name__ == "__main__":
     main()
