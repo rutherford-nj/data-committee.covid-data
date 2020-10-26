@@ -1,0 +1,4 @@
+cycler
+matplotlib
+pandas
+seaborn

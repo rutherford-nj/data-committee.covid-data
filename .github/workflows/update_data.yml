@@ -18,14 +18,15 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Write time
-        run: date
+        run: TZ=America/New_York date +"%A %B %d at %l:%M%P" | tee docs/last_updated
 
       - name: Fetch data
         run: cd data && go run *.go
 
       - name: Update charts
         run: |
-          docker run -v `pwd`:/work --entrypoint="/work/run.bash" ghcr.io/bogosj/rutherford_covid_data_builder:latest
+          docker build -t rutherford_covid_image .
+          docker run -v `pwd`:/work --entrypoint="/work/run.bash" rutherford_covid_image
 
       - name: Commit data changes
         run: |

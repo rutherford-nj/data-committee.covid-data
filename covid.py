@@ -81,7 +81,8 @@ class CovidData:
             self.data_df_dict[region] = self.do_smoothing(self.data_df_dict[region], region)
 
         # Set up ploting defaults
-        color_blind = ['#FF800E', '#595959', '#A2C8EC', '#006BA4']
+        # Black, Green, Orange, Blue
+        color_palette = ['#000000', '#009E73', '#D55E00', '#0072B2']
 
         sns.set(rc={
             'axes.axisbelow': False,
@@ -91,7 +92,7 @@ class CovidData:
             'axes.labelcolor': 'dimgrey',
             'axes.spines.right': False,
             'axes.spines.top': False,
-            'axes.prop_cycle': cycler('color', color_blind),
+            'axes.prop_cycle': cycler('color', color_palette),
             'figure.facecolor': 'white',
             'lines.solid_capstyle': 'round',
             'patch.edgecolor': 'w',
