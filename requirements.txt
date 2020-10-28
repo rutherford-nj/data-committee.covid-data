@@ -1,4 +1,4 @@
-cycler
-matplotlib
-pandas
-seaborn
+cycler==0.10.0
+matplotlib==3.3.2
+pandas==1.1.3
+seaborn==0.11.0
