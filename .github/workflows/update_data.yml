@@ -28,6 +28,10 @@ jobs:
           docker build -t rutherford_covid_image .
           docker run -v `pwd`:/work --entrypoint="/work/run.bash" rutherford_covid_image
 
+      - name: Compress SVGs
+        run: |
+          docker run -v `pwd`:/work --entrypoint="/work/data/svgo.sh" node
+
       - name: Commit data changes
         run: |
           git config user.name github-actions
