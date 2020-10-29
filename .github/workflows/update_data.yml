@@ -30,7 +30,7 @@ jobs:
 
       - name: Compress SVGs
         run: |
-          docker run -v `pwd`:/work --entrypoint="/work/data/svgo.sh" node
+          docker run -v `pwd`:/work --entrypoint="/work/data/svgo.sh" node:15.0.1-alpine3.12
 
       - name: Commit data changes
         run: |
