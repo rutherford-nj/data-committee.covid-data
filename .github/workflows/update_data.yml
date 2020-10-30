@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   push:
     paths: 
-      - 'covid.py'
+      - 'process_covid_data.py'
   schedule:
     - cron: '0 0 * * *'
 

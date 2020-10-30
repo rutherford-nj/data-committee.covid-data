@@ -9,86 +9,10 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-import seaborn as sns
-from cycler import cycler
 
-# Set some default params for data smoothing
-SmoothingParams = {
-    # Simple moving average window
-    'SMA_WIN': 14,
+from .defaults import SmoothingParams, RegionNames, DataFileNames, DefaultPopulations, set_plot_defaults
 
-    # Exponentially Weighted Moving Average span
-    'EWMA_SPAN': 14  # spn=29, com=14 | spn=15, com=7
-}
-
-# Set some default plots to make
-MakeThesePlots = {
-    'NEW_NORM_SMA': True,  # All New Cases Scaled by SMA
-    'NEW_NORM_EWMA': False,  # All New Cases Scaled by EWMA
-    'TOTAL_NORM': False,  # Total New Cases Scaled
-    'TOTAL_NORM_SMA': True,  # Total New Cases Scaled by SMA
-    'LOCAL_NEW': True,  # Rutherford new and total cases, unscaled
-    'LOCAL_TOTAL': True  # Rutherford new and total cases, unscaled
-}
-
-RegionNames = {'US': 'United_States',
-               'NJ': 'New_Jersey',
-               'Bergen': 'Bergen_County',
-               'Counties': 'NJ_Counties',
-               'Rutherford': 'Rutherford'}
-
-# The data we're importing default file names
-DataFileNames = {RegionNames['US']: 'covid_tracking_us.csv',
-                 RegionNames['NJ']: 'covid_tracking_nj.csv',
-                 RegionNames['Counties']: 'nytimes_nj_counties.csv',
-                 RegionNames['Rutherford']: 'rutherford_data.csv'}
-
-# 2019 populations
-DefaultPopulations = {RegionNames['US']: 328.2E6,
-                      RegionNames['NJ']: 8.882E6,
-                      RegionNames['Bergen']: 932202,
-                      RegionNames['Rutherford']: 18303}
-DefaultPopulations[RegionNames['Counties']] = (DefaultPopulations[RegionNames['NJ']]
-                                               - DefaultPopulations[RegionNames['Bergen']])
-
-
-def set_plot_defaults():
-    """ Set up ploting defaults """
-
-    # Black, Green, Orange, Blue
-    color_palette = ['#000000', '#009E73', '#D55E00', '#0072B2']
-
-    sns.set(rc={
-        'axes.axisbelow': False,
-        'axes.edgecolor': 'lightgrey',
-        'axes.facecolor': 'None',
-        'axes.grid': True,
-        'axes.labelcolor': 'dimgrey',
-        'axes.spines.right': False,
-        'axes.spines.top': False,
-        'axes.prop_cycle': cycler('color', color_palette),
-        'figure.facecolor': 'white',
-        'lines.solid_capstyle': 'round',
-        'patch.edgecolor': 'w',
-        'patch.force_edgecolor': True,
-        'text.color': 'dimgrey',
-        'xtick.bottom': False,
-        'xtick.color': 'dimgrey',
-        'xtick.direction': 'out',
-        'xtick.top': False,
-        'ytick.color': 'dimgrey',
-        'ytick.direction': 'out',
-        'ytick.left': False,
-        'ytick.right': False,
-    }
-    )
-
-    sns.set_context("notebook", rc={"font.size": 16,
-                                    "axes.titlesize": 20,
-                                    "axes.labelsize": 18})
-
-
-class CovidSettings:
+class Settings:
     """ Settings for the runs go here """
 
     def __init__(self, settings=None):
@@ -152,14 +76,14 @@ class CovidSettings:
         return self.settings['debug']
 
 
-class CovidData:
+class GetData:
     """
     Gets and massages town covid data
     """
 
     def __init__(self, settings=None):
 
-        self.settings = CovidSettings() if settings is None else settings
+        self.settings = Settings() if settings is None else settings
 
         # Get data from sources
         self.data_df_dict = self.get_data()
@@ -254,7 +178,7 @@ class CovidData:
         return covid_df
 
 
-class CovidPlots:
+class MakePlots:
     """
     Class that gets and massages town covid data
     """
@@ -511,61 +435,3 @@ class CovidPlots:
             plt.savefig(config['fname'] + ".svg", format="svg")
             plt.close()
 
-
-def main():
-    """
-    Get data and output useful stuff
-    """
-
-    # Init covid class
-    # TODO: Make an argument
-    sma_win = SmoothingParams['SMA_WIN']
-    ewma_span = SmoothingParams['EWMA_SPAN']
-    settings = {
-        'sma_win': sma_win,
-        'ewma_spn': ewma_span,
-        'debug': False
-    }
-
-    # Lazy way to turn plots on and off (can be args later)
-    # TODO: Make arguments
-    do_new_norm_sma = MakeThesePlots['NEW_NORM_SMA']
-    do_new_norm_ewma = MakeThesePlots['NEW_NORM_EWMA']
-    do_totals_norm = MakeThesePlots['TOTAL_NORM']
-    do_totals_norm_sma = MakeThesePlots['TOTAL_NORM_SMA']
-    do_local_new_cases = MakeThesePlots['LOCAL_NEW']
-    do_local_total_cases = MakeThesePlots['LOCAL_TOTAL']
-
-    # Set up the run
-    covid_settings = CovidSettings(settings)
-
-    # Get the data
-    covid_data = CovidData(covid_settings)
-
-    # Dir to write output to (assuming root is where this script is)
-    os.chdir('docs')
-
-    # Set up plotting and plot away if set
-    plot_data = CovidPlots(covid_data)
-
-    if do_new_norm_sma:
-        plot_data.new_cases_scaled_sma()
-
-    if do_new_norm_ewma:
-        plot_data.new_cases_scaled_ewma()
-
-    if do_totals_norm:
-        plot_data.total_cases_scaled()
-
-    if do_totals_norm_sma:
-        plot_data.total_cases_scaled_sma()
-
-    if do_local_new_cases:
-        plot_data.local_new_cases()
-
-    if do_local_total_cases:
-        plot_data.local_total_cases()
-
-
-if __name__ == "__main__":
-    main()
