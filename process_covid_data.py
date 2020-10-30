@@ -7,8 +7,20 @@ Greg Recine <greg@gregrecine.com> Oct 18 2020
 """
 import os
 
-from lib.defaults import SmoothingParams, MakeThesePlots
 from lib import covid
+
+MakeThesePlots = [
+    covid.MakePlots.plot_new_cases_scaled_sma,    # All New Cases Scaled by SMA
+    # covid.MakePlots.plot_new_cases_scaled_ewma, # All New Cases Scaled by EWMA
+    # covid.MakePlots.plot_total_cases_scaled,    # Total New Cases Scaled
+    covid.MakePlots.plot_total_cases_scaled_sma,  # Total New Cases Scaled by SMA
+    covid.MakePlots.plot_local_new_cases,         # Rutherford new cases, unscaled
+    covid.MakePlots.plot_local_total_cases,       # Rutherford total cases, unscaled
+]
+
+CalcTheseStats = [
+    # covid.MakeStats.calc_stat_type_here, # Some stat type goes here
+]
 
 
 def main():
@@ -16,29 +28,10 @@ def main():
     Get data and output useful stuff
     """
 
-    # Init covid class
-    # TODO: Make an argument
-    sma_win = SmoothingParams['SMA_WIN']
-    ewma_span = SmoothingParams['EWMA_SPAN']
-    settings = {
-        'sma_win': sma_win,
-        'ewma_spn': ewma_span,
-        'debug': False
-    }
+    # Set up the run with settings in lib/defaults.py
+    covid_settings = covid.Settings()
 
-    # Lazy way to turn plots on and off (can be args later)
-    # TODO: Make arguments
-    do_new_norm_sma = MakeThesePlots['NEW_NORM_SMA']
-    do_new_norm_ewma = MakeThesePlots['NEW_NORM_EWMA']
-    do_totals_norm = MakeThesePlots['TOTAL_NORM']
-    do_totals_norm_sma = MakeThesePlots['TOTAL_NORM_SMA']
-    do_local_new_cases = MakeThesePlots['LOCAL_NEW']
-    do_local_total_cases = MakeThesePlots['LOCAL_TOTAL']
-
-    # Set up the run
-    covid_settings = covid.Settings(settings)
-
-    # Get the data
+    # Initialize the data
     covid_data = covid.GetData(covid_settings)
 
     # Dir to write output to (assuming root is where this script is)
@@ -47,23 +40,18 @@ def main():
     # Set up plotting and plot away if set
     plot_data = covid.MakePlots(covid_data)
 
-    if do_new_norm_sma:
-        plot_data.new_cases_scaled_sma()
+    # Plot the plots we want
+    for plot in MakeThesePlots:
+        plot_type = plot.__name__
+        getattr(plot_data, plot_type)()
 
-    if do_new_norm_ewma:
-        plot_data.new_cases_scaled_ewma()
+    # Set up plotting and plot away if set
+    stats_data = covid.MakePlots(covid_data)
 
-    if do_totals_norm:
-        plot_data.total_cases_scaled()
-
-    if do_totals_norm_sma:
-        plot_data.total_cases_scaled_sma()
-
-    if do_local_new_cases:
-        plot_data.local_new_cases()
-
-    if do_local_total_cases:
-        plot_data.local_total_cases()
+    # Calc the stats we want
+    for calc in CalcTheseStats:
+        calc_type = calc.__name__
+        getattr(stats_data, calc_type)()
 
 
 if __name__ == "__main__":
