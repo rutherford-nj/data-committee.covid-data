@@ -10,6 +10,7 @@ import os
 from lib.defaults import SmoothingParams, MakeThesePlots
 from lib import covid
 
+
 def main():
     """
     Get data and output useful stuff

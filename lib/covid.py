@@ -12,6 +12,7 @@ import matplotlib.dates as mdates
 
 from .defaults import SmoothingParams, RegionNames, DataFileNames, DefaultPopulations, set_plot_defaults
 
+
 class Settings:
     """ Settings for the runs go here """
 
@@ -434,4 +435,3 @@ class MakePlots:
         else:
             plt.savefig(config['fname'] + ".svg", format="svg")
             plt.close()
-

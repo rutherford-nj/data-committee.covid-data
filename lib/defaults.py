@@ -82,5 +82,3 @@ def set_plot_defaults():
     sns.set_context("notebook", rc={"font.size": 16,
                                     "axes.titlesize": 20,
                                     "axes.labelsize": 18})
-
-
