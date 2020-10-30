@@ -31,68 +31,135 @@ MakeThesePlots = {
     'LOCAL_TOTAL': True  # Rutherford new and total cases, unscaled
 }
 
+RegionNames = {'US': 'United_States',
+               'NJ': 'New_Jersey',
+               'Bergen': 'Bergen_County',
+               'Counties': 'NJ_Counties',
+               'Rutherford': 'Rutherford'}
 
-# I have 8/7 instance attributes, need to refactor?
-class CovidData:
-    """
-    Class that gets and massages town covid data
-    """
+# The data we're importing default file names
+DataFileNames = {RegionNames['US']: 'covid_tracking_us.csv',
+                 RegionNames['NJ']: 'covid_tracking_nj.csv',
+                 RegionNames['Counties']: 'nytimes_nj_counties.csv',
+                 RegionNames['Rutherford']: 'rutherford_data.csv'}
 
-    _regions = {'US': 'United_States',
-                'NJ': 'New_Jersey',
-                'Bergen': 'Bergen_County',
-                'Counties': 'NJ_Counties',
-                'Rutherford': 'Rutherford'}
+# 2019 populations
+DefaultPopulations = {RegionNames['US']: 328.2E6,
+                      RegionNames['NJ']: 8.882E6,
+                      RegionNames['Bergen']: 932202,
+                      RegionNames['Rutherford']: 18303}
+DefaultPopulations[RegionNames['Counties']] = (DefaultPopulations[RegionNames['NJ']]
+                                               - DefaultPopulations[RegionNames['Bergen']])
 
-    @property
-    def regions(self):
-        """ return regions dict """
-        return self._regions
 
-    @property
-    def debug(self):
-        """ return debug bool"""
-        return self.config.get('debug', True)
+def set_plot_defaults():
+    """ Set up ploting defaults """
 
-    def __init__(self, config=None):
+    # Black, Green, Orange, Blue
+    color_palette = ['#000000', '#009E73', '#D55E00', '#0072B2']
+
+    sns.set(rc={
+        'axes.axisbelow': False,
+        'axes.edgecolor': 'lightgrey',
+        'axes.facecolor': 'None',
+        'axes.grid': True,
+        'axes.labelcolor': 'dimgrey',
+        'axes.spines.right': False,
+        'axes.spines.top': False,
+        'axes.prop_cycle': cycler('color', color_palette),
+        'figure.facecolor': 'white',
+        'lines.solid_capstyle': 'round',
+        'patch.edgecolor': 'w',
+        'patch.force_edgecolor': True,
+        'text.color': 'dimgrey',
+        'xtick.bottom': False,
+        'xtick.color': 'dimgrey',
+        'xtick.direction': 'out',
+        'xtick.top': False,
+        'ytick.color': 'dimgrey',
+        'ytick.direction': 'out',
+        'ytick.left': False,
+        'ytick.right': False,
+    }
+    )
+
+    sns.set_context("notebook", rc={"font.size": 16,
+                                    "axes.titlesize": 20,
+                                    "axes.labelsize": 18})
+
+
+class CovidSettings:
+    """ Settings for the runs go here """
+
+    def __init__(self, settings=None):
         """
 
-        :param config:
+        :param settings:
             data_files: dict of file description and file name
+            data_dir: where the data is located
+            regions: list of region names
             population:  Rutherford 2019 population
             sma_win: sma window in days
             ewma_spn: ewma span in days
+            debug: debug flag
         """
 
         # Set config to empty dict if not provided
-        self.config = {} if config is None else config
+        self.settings = {} if settings is None else settings
 
-        # Set smoothing defaults if not in config
-        self.sma_win = config.get('sma_win', SmoothingParams['SMA_WIN'])
-        self.ewma_spn = config.get('ewma_spn', SmoothingParams['EWMA_SPAN'])
+        # Set default settings
+        self.settings['data_files'] = self.settings.get('data_files', DataFileNames)
+        self.settings['data_dir'] = self.settings.get('data_dir', os.path.join(os.getcwd(), 'data', 'csv'))
+        self.settings['population'] = self.settings.get('population', DefaultPopulations)
+        self.settings['regions'] = self.settings.get('regions', RegionNames)
+        self.settings['sma_win'] = self.settings.get('sma_win', SmoothingParams['SMA_WIN'])
+        self.settings['ewma_spn'] = self.settings.get('ewma_spn', SmoothingParams['EWMA_SPAN'])
+        self.settings['debug'] = self.settings.get('debug', False)
 
-        regions = self.regions
+    @property
+    def data_files(self):
+        """Return data_files setting"""
+        return self.settings['data_files']
 
-        # The data we're importing
-        _data_files = {regions['US']: 'covid_tracking_us.csv',
-                       regions['NJ']: 'covid_tracking_nj.csv',
-                       regions['Counties']: 'nytimes_nj_counties.csv',
-                       regions['Rutherford']: 'rutherford_data.csv'}
+    @property
+    def data_dir(self):
+        """Return data_dir setting"""
+        return self.settings['data_dir']
 
-        self.data_files = config.get('data_files', _data_files)
+    @property
+    def population(self):
+        """Return population setting"""
+        return self.settings['population']
 
-        _data_dir = os.path.join(os.getcwd(), 'data', 'csv')
-        self.data_dir = config.get('data_dir', _data_dir)
+    @property
+    def regions(self):
+        """Return regions setting"""
+        return self.settings['regions']
 
-        # 2019 populations
-        _population = {regions['US']: 328.2E6,
-                       regions['NJ']: 8.882E6,
-                       regions['Bergen']: 932202,  # Bergen County Population
-                       regions['Rutherford']: 18303}
+    @property
+    def sma_win(self):
+        """Return sma_win setting"""
+        return self.settings['sma_win']
 
-        _population[regions['Counties']] = _population[regions['NJ']] - _population[regions['Bergen']]
+    @property
+    def ewma_spn(self):
+        """Return ewma_spn setting"""
+        return self.settings['ewma_spn']
 
-        self.population = config.get('population', _population)
+    @property
+    def debug(self):
+        """Return debug setting"""
+        return self.settings['debug']
+
+
+class CovidData:
+    """
+    Gets and massages town covid data
+    """
+
+    def __init__(self, settings=None):
+
+        self.settings = CovidSettings() if settings is None else settings
 
         # Get data from sources
         self.data_df_dict = self._get_data()
@@ -100,24 +167,26 @@ class CovidData:
         # Pad data with zeros back to earliest date
         self._pad_date()
 
+        regions = self.settings.regions
+
         # Do smoothing
         for key in regions:
             region = regions[key]
             self.data_df_dict[region] = self.do_smoothing(self.data_df_dict[region], region)
 
-    def _get_data(self, data_dir=None):
+    def _get_data(self):
         """ Grab data from the google sheet and pop into a pandas dataframe
 
         :return: df: dataframe of: Date, New Cases, Total Cases
         """
 
-        data_dir = self.data_dir if data_dir is None else data_dir
-
-        regions = self.regions
+        data_dir = self.settings.data_dir
+        data_files = self.settings.data_files
+        regions = self.settings.regions
 
         data_df_dict = {}
-        for key in self.data_files.keys():
-            _df = pd.read_csv(os.path.join(data_dir, self.data_files[key]), parse_dates=[0])
+        for key in data_files.keys():
+            _df = pd.read_csv(os.path.join(data_dir, data_files[key]), parse_dates=[0])
             if key == regions['Counties']:
                 _df['New Cases'] = _df.groupby('County').apply(lambda x: x['Total Cases'].diff()).reset_index(level=0,
                                                                                                               drop=True)
@@ -138,7 +207,7 @@ class CovidData:
         # Pad zeros back to the earliest date in all the files
         min_date = pd.Timestamp.today()
 
-        regions = self.regions
+        regions = self.settings.regions
 
         for key in regions:
             _df = self.data_df_dict[regions[key]]
@@ -162,9 +231,9 @@ class CovidData:
         :param covid_df: input data frame (date, total cases, new cases)
         :return: dataframe with new columns
         """
-        sma_win = self.sma_win
-        ewma_spn = self.ewma_spn
-        population = self.population[region]
+        sma_win = self.settings.sma_win
+        ewma_spn = self.settings.ewma_spn
+        population = self.settings.population[region]
 
         # Do smoothing with sma and ewma (unscaled and scaled)
         covid_df[str(sma_win) + 'd avg'] = covid_df['New Cases'].rolling(sma_win).mean()
@@ -195,50 +264,30 @@ class CovidPlots:
         :param covid_data: CovidData class
         """
 
-        self.debug = covid_data.debug
-        self.sma_win = covid_data.sma_win
-        self.ewma_spn = covid_data.ewma_spn
+        self.covid_data = covid_data
 
-        # Set up ploting defaults
-        # Black, Green, Orange, Blue
-        color_palette = ['#000000', '#009E73', '#D55E00', '#0072B2']
+        set_plot_defaults()
 
-        sns.set(rc={
-            'axes.axisbelow': False,
-            'axes.edgecolor': 'lightgrey',
-            'axes.facecolor': 'None',
-            'axes.grid': True,
-            'axes.labelcolor': 'dimgrey',
-            'axes.spines.right': False,
-            'axes.spines.top': False,
-            'axes.prop_cycle': cycler('color', color_palette),
-            'figure.facecolor': 'white',
-            'lines.solid_capstyle': 'round',
-            'patch.edgecolor': 'w',
-            'patch.force_edgecolor': True,
-            'text.color': 'dimgrey',
-            'xtick.bottom': False,
-            'xtick.color': 'dimgrey',
-            'xtick.direction': 'out',
-            'xtick.top': False,
-            'ytick.color': 'dimgrey',
-            'ytick.direction': 'out',
-            'ytick.left': False,
-            'ytick.right': False,
-        }
-        )
+        regions = covid_data.settings.regions
 
-        sns.set_context("notebook", rc={"font.size": 16,
-                                        "axes.titlesize": 20,
-                                        "axes.labelsize": 18})
+        self.covid_df = {}
+        for key in regions:
+            self.covid_df[key] = covid_data.data_df_dict[regions[key]]
 
-        regions = covid_data.regions
+    @property
+    def _debug(self):
+        """debug flag"""
+        return self.covid_data.settings.debug
 
-        self.us_df = covid_data.data_df_dict[regions['US']]
-        self.nj_df = covid_data.data_df_dict[regions['NJ']]
-        self.ct_df = covid_data.data_df_dict[regions['Counties']]
-        self.bc_df = covid_data.data_df_dict[regions['Bergen']]
-        self.rf_df = covid_data.data_df_dict[regions['Rutherford']]
+    @property
+    def sma_win(self):
+        """SMA Window"""
+        return self.covid_data.settings.sma_win
+
+    @property
+    def ewma_spn(self):
+        """EWMA Span"""
+        return self.covid_data.settings.ewma_spn
 
     def local_new_cases(self):
         """ Plot Rutherford local case numbers and -/+ 1 std
@@ -246,9 +295,9 @@ class CovidPlots:
         :return: nothing, creates plot
         """
 
-        # New cases for Rutheford
+        # New cases for Rutherford
         def _plot_fn(ax):
-            _df = self.rf_df
+            _df = self.covid_df['Rutherford']
 
             _df['New Cases std'] = _df[str(self.sma_win) + 'd avg'].rolling(self.sma_win, min_periods=1).std()
 
@@ -280,7 +329,7 @@ class CovidPlots:
 
         # New cases for Rutheford
         def _plot_fn(ax):
-            _df = self.rf_df
+            _df = self.covid_df['Rutherford']
 
             _df['Total Cases std'] = _df[str(self.sma_win) + 'd avg Total Cases'].rolling(self.sma_win,
                                                                                           min_periods=1).std()
@@ -313,11 +362,12 @@ class CovidPlots:
 
         # All New Cases Scaled by SMA
         def _new_cases_scaled_sma(ax):
-            ax.plot(self.us_df['Date'], self.us_df[str(self.sma_win) + 'd avg / 100K'])
-            ax.plot(self.nj_df['Date'], self.nj_df[str(self.sma_win) + 'd avg / 100K'])
-            # ax.plot(self.ct_df['Date'], self.ct_df[str(self.sma_win) + 'd avg / 100K'])
-            ax.plot(self.bc_df['Date'], self.bc_df[str(self.sma_win) + 'd avg / 100K'])
-            ax.plot(self.rf_df['Date'], self.rf_df[str(self.sma_win) + 'd avg / 100K'])
+            ax.plot(self.covid_df['US']['Date'], self.covid_df['US'][str(self.sma_win) + 'd avg / 100K'])
+            ax.plot(self.covid_df['NJ']['Date'], self.covid_df['NJ'][str(self.sma_win) + 'd avg / 100K'])
+            # ax.plot(self.df['Counties']['Date'], self.df['Counties'][str(self.sma_win) + 'd avg / 100K'])
+            ax.plot(self.covid_df['Bergen']['Date'], self.covid_df['Bergen'][str(self.sma_win) + 'd avg / 100K'])
+            ax.plot(self.covid_df['Rutherford']['Date'],
+                    self.covid_df['Rutherford'][str(self.sma_win) + 'd avg / 100K'])
 
             return ax
 
@@ -339,11 +389,12 @@ class CovidPlots:
         """
 
         def _new_cases_scaled_ewma(ax):
-            ax.plot(self.us_df['Date'], self.us_df[str(self.ewma_spn) + 'd ewma / 100K'])
-            ax.plot(self.nj_df['Date'], self.nj_df[str(self.ewma_spn) + 'd ewma / 100K'])
-            # ax.plot(self.ct_df['Date'], self.ct_df[str(self.ewma_spn) + 'd ewma / 100K'])
-            ax.plot(self.bc_df['Date'], self.bc_df[str(self.ewma_spn) + 'd ewma / 100K'])
-            ax.plot(self.rf_df['Date'], self.rf_df[str(self.ewma_spn) + 'd ewma / 100K'])
+            ax.plot(self.covid_df['US']['Date'], self.covid_df['US'][str(self.ewma_spn) + 'd ewma / 100K'])
+            ax.plot(self.covid_df['NJ']['Date'], self.covid_df['NJ'][str(self.ewma_spn) + 'd ewma / 100K'])
+            # ax.plot(self.df['Counties']['Date'], self.df['Counties'][str(self.ewma_spn) + 'd ewma / 100K'])
+            ax.plot(self.covid_df['Bergen']['Date'], self.covid_df['Bergen'][str(self.ewma_spn) + 'd ewma / 100K'])
+            ax.plot(self.covid_df['Rutherford']['Date'],
+                    self.covid_df['Rutherford'][str(self.ewma_spn) + 'd ewma / 100K'])
 
             return ax
 
@@ -365,11 +416,11 @@ class CovidPlots:
         """
 
         def _total_cases_scaled(ax):
-            ax.plot(self.us_df['Date'], self.us_df['Total Cases / 100K'])
-            ax.plot(self.nj_df['Date'], self.nj_df['Total Cases / 100K'])
-            # ax.plot(self.ct_df['Date'], self.ct_df['Total Cases / 100K'])
-            ax.plot(self.bc_df['Date'], self.bc_df['Total Cases / 100K'])
-            ax.plot(self.rf_df['Date'], self.rf_df['Total Cases / 100K'])
+            ax.plot(self.covid_df['US']['Date'], self.covid_df['US']['Total Cases / 100K'])
+            ax.plot(self.covid_df['NJ']['Date'], self.covid_df['NJ']['Total Cases / 100K'])
+            # ax.plot(self.df['Counties']['Date'], self.df['Counties']['Total Cases / 100K'])
+            ax.plot(self.covid_df['Bergen']['Date'], self.covid_df['Bergen']['Total Cases / 100K'])
+            ax.plot(self.covid_df['Rutherford']['Date'], self.covid_df['Rutherford']['Total Cases / 100K'])
 
             return ax
 
@@ -391,11 +442,13 @@ class CovidPlots:
         """
 
         def _total_cases_scaled_sma(ax):
-            ax.plot(self.us_df['Date'], self.us_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
-            ax.plot(self.nj_df['Date'], self.nj_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
-            # ax.plot(ct_df['Date'], self.ct_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
-            ax.plot(self.bc_df['Date'], self.bc_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
-            ax.plot(self.rf_df['Date'], self.rf_df[str(self.sma_win) + 'd avg Total Cases / 100K'])
+            ax.plot(self.covid_df['US']['Date'], self.covid_df['US'][str(self.sma_win) + 'd avg Total Cases / 100K'])
+            ax.plot(self.covid_df['NJ']['Date'], self.covid_df['NJ'][str(self.sma_win) + 'd avg Total Cases / 100K'])
+            # ax.plot(df['Counties']['Date'], self.df['Counties'][str(self.sma_win) + 'd avg Total Cases / 100K'])
+            ax.plot(self.covid_df['Bergen']['Date'],
+                    self.covid_df['Bergen'][str(self.sma_win) + 'd avg Total Cases / 100K'])
+            ax.plot(self.covid_df['Rutherford']['Date'],
+                    self.covid_df['Rutherford'][str(self.sma_win) + 'd avg Total Cases / 100K'])
 
             return ax
 
@@ -418,7 +471,7 @@ class CovidPlots:
 
         config = {} if config is None else config
 
-        if self.debug:
+        if self._debug:
             print('stats here')
         else:
             pass
@@ -451,7 +504,7 @@ class CovidPlots:
             plt.legend(config['legend'], fontsize=16)
         plt.grid()
 
-        if self.debug:
+        if self._debug:
             plt.show()
         else:
             plt.savefig(config['fname'] + ".svg", format="svg")
@@ -467,7 +520,7 @@ def main():
     # TODO: Make an argument
     sma_win = SmoothingParams['SMA_WIN']
     ewma_span = SmoothingParams['EWMA_SPAN']
-    data_config = {
+    settings = {
         'sma_win': sma_win,
         'ewma_spn': ewma_span,
         'debug': False
@@ -482,12 +535,16 @@ def main():
     do_local_new_cases = MakeThesePlots['LOCAL_NEW']
     do_local_total_cases = MakeThesePlots['LOCAL_TOTAL']
 
-    # Init class
-    covid_data = CovidData(data_config)
+    # Set up the run
+    covid_settings = CovidSettings(settings)
+
+    # Get the data
+    covid_data = CovidData(covid_settings)
 
     # Dir to write output to (assuming root is where this script is)
     os.chdir('docs')
 
+    # Set up plotting and plot away if set
     plot_data = CovidPlots(covid_data)
 
     if do_new_norm_sma:
