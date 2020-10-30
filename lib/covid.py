@@ -1,5 +1,5 @@
 """
-Get covid data for the 07070 and display pretty plots and tables.
+Library to get covid data for the 07070, BC, NJ, and US, then and display pretty plots and tables.
 
 This is very overengineered and was done for s+g
 
@@ -182,6 +182,8 @@ class GetData:
 class MakePlots:
     """
     Class that gets and massages town covid data
+
+    Plot function definitions must start with plot_
     """
 
     def __init__(self, covid_data):
@@ -215,7 +217,7 @@ class MakePlots:
         """EWMA Span"""
         return self.covid_data.settings.ewma_spn
 
-    def local_new_cases(self):
+    def plot_local_new_cases(self):
         """ Plot Rutherford local case numbers and -/+ 1 std
 
         :return: nothing, creates plot
@@ -247,7 +249,7 @@ class MakePlots:
                        }
         self._make_plot(plot_config)
 
-    def local_total_cases(self):
+    def plot_local_total_cases(self):
         """ Plot Rutherford local total case numbers and -/+ 1 std
 
         :return: nothing, creates plot
@@ -280,7 +282,7 @@ class MakePlots:
                        }
         self._make_plot(plot_config)
 
-    def new_cases_scaled_sma(self):
+    def plot_new_cases_scaled_sma(self):
         """ Plots new cases SMA across regions, scaled per 100K pop
 
         :return: nothing, creates plot
@@ -308,7 +310,7 @@ class MakePlots:
                        }
         self._make_plot(plot_config)
 
-    def new_cases_scaled_ewma(self):
+    def plot_new_cases_scaled_ewma(self):
         """ Plots new cases EWMA across regions, scaled per 100K pop
 
         :return: nothing, creates plot
@@ -335,7 +337,7 @@ class MakePlots:
                        }
         self._make_plot(plot_config)
 
-    def total_cases_scaled(self):
+    def plot_total_cases_scaled(self):
         """ Plots total cases across regions, scaled per 100K pop
 
         :return: nothing, creates plot
@@ -361,7 +363,7 @@ class MakePlots:
                        }
         self._make_plot(plot_config)
 
-    def total_cases_scaled_sma(self):
+    def plot_total_cases_scaled_sma(self):
         """ Plots total cases across regions, scaled per 100K pop
 
         :return: nothing, creates plot
@@ -388,19 +390,6 @@ class MakePlots:
                                   'Rutherford']
                        }
         self._make_plot(plot_config)
-
-    def _do_tables(self, config=None):
-        """ TODO: Print some tabular information of stats
-
-        :param config: Dict TBD
-        """
-
-        config = {} if config is None else config
-
-        if self._debug:
-            print(config)
-        else:
-            pass
 
     def _make_plot(self, config):
         """ Plot town cases and averages
@@ -435,3 +424,78 @@ class MakePlots:
         else:
             plt.savefig(config['fname'] + ".svg", format="svg")
             plt.close()
+
+
+class MakeStats:
+    """
+    Class that gets and massages town covid data
+
+    Stats function definitions must start with plot_
+    """
+
+    def __init__(self, covid_data):
+        """
+
+        :param covid_data: CovidData class
+        """
+
+        self.covid_data = covid_data
+
+        set_plot_defaults()
+
+        regions = covid_data.settings.regions
+
+        self.covid_df = {}
+        for key in regions:
+            self.covid_df[key] = covid_data.data_df_dict[regions[key]]
+
+    @property
+    def _debug(self):
+        """debug flag"""
+        return self.covid_data.settings.debug
+
+    @property
+    def sma_win(self):
+        """SMA Window"""
+        return self.covid_data.settings.sma_win
+
+    @property
+    def ewma_spn(self):
+        """EWMA Span"""
+        return self.covid_data.settings.ewma_spn
+
+    def calc_stat_type_here(self):
+        """ Calculate something good. Just do something stupid for now
+
+        :return: nothing, calcs stat
+        """
+
+        # New cases for Rutherford
+        def _stat_fn():
+            _df = self.covid_df['Rutherford']
+
+            _df['New Cases std'] = _df[str(self.sma_win) + 'd avg'].rolling(self.sma_win, min_periods=1).std()
+
+            stat = _df['New Cases std'].iloc[-1]
+
+            return stat
+
+        table_config = {'stat_fn': _stat_fn,
+                        'fname': 'sample_stat',
+                        'title': 'Rutherford New Covid Cases Current Standard Dev',
+                        'legend': ['Uncertainty']
+                        }
+        self._make_table(table_config)
+
+    def _make_table(self, config=None):
+        """ TODO: Print some tabular information of stats
+
+        :param config: Dict TBD
+        """
+
+        config = {} if config is None else config
+
+        if self._debug:
+            print(config)
+        else:
+            pass
