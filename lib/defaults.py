@@ -17,16 +17,6 @@ SmoothingParams = {
     'EWMA_SPAN': 14  # spn=29, com=14 | spn=15, com=7
 }
 
-# Set some default plots to make
-MakeThesePlots = {
-    'NEW_NORM_SMA': True,  # All New Cases Scaled by SMA
-    'NEW_NORM_EWMA': False,  # All New Cases Scaled by EWMA
-    'TOTAL_NORM': False,  # Total New Cases Scaled
-    'TOTAL_NORM_SMA': True,  # Total New Cases Scaled by SMA
-    'LOCAL_NEW': True,  # Rutherford new and total cases, unscaled
-    'LOCAL_TOTAL': True  # Rutherford new and total cases, unscaled
-}
-
 RegionNames = {'US': 'United_States',
                'NJ': 'New_Jersey',
                'Bergen': 'Bergen_County',
