@@ -162,10 +162,10 @@ class CovidData:
         self.settings = CovidSettings() if settings is None else settings
 
         # Get data from sources
-        self.data_df_dict = self._get_data()
+        self.data_df_dict = self.get_data()
 
         # Pad data with zeros back to earliest date
-        self._pad_date()
+        self.pad_date()
 
         regions = self.settings.regions
 
@@ -174,7 +174,7 @@ class CovidData:
             region = regions[key]
             self.data_df_dict[region] = self.do_smoothing(self.data_df_dict[region], region)
 
-    def _get_data(self):
+    def get_data(self):
         """ Grab data from the google sheet and pop into a pandas dataframe
 
         :return: df: dataframe of: Date, New Cases, Total Cases
@@ -203,8 +203,9 @@ class CovidData:
 
         return data_df_dict
 
-    def _pad_date(self):
-        # Pad zeros back to the earliest date in all the files
+    def pad_date(self):
+        """Pad zeros back to the earliest date in all the files"""
+        # noinspection PyArgumentList
         min_date = pd.Timestamp.today()
 
         regions = self.settings.regions
@@ -319,7 +320,7 @@ class CovidPlots:
                        'legend': ['Daily Cases',
                                   'Uncertainty']
                        }
-        self.make_plot(plot_config)
+        self._make_plot(plot_config)
 
     def local_total_cases(self):
         """ Plot Rutherford local total case numbers and -/+ 1 std
@@ -327,7 +328,7 @@ class CovidPlots:
         :return: nothing, creates plot
         """
 
-        # New cases for Rutheford
+        # New cases for Rutherford
         def _plot_fn(ax):
             _df = self.covid_df['Rutherford']
 
@@ -352,7 +353,7 @@ class CovidPlots:
                        'legend': ['Total Cases',
                                   'Uncertainty']
                        }
-        self.make_plot(plot_config)
+        self._make_plot(plot_config)
 
     def new_cases_scaled_sma(self):
         """ Plots new cases SMA across regions, scaled per 100K pop
@@ -380,7 +381,7 @@ class CovidPlots:
                                   'Bergen County',
                                   'Rutherford']
                        }
-        self.make_plot(plot_config)
+        self._make_plot(plot_config)
 
     def new_cases_scaled_ewma(self):
         """ Plots new cases EWMA across regions, scaled per 100K pop
@@ -407,7 +408,7 @@ class CovidPlots:
                                   'Bergen County',
                                   'Rutherford']
                        }
-        self.make_plot(plot_config)
+        self._make_plot(plot_config)
 
     def total_cases_scaled(self):
         """ Plots total cases across regions, scaled per 100K pop
@@ -433,7 +434,7 @@ class CovidPlots:
                                   'Bergen County',
                                   'Rutherford']
                        }
-        self.make_plot(plot_config)
+        self._make_plot(plot_config)
 
     def total_cases_scaled_sma(self):
         """ Plots total cases across regions, scaled per 100K pop
@@ -461,9 +462,9 @@ class CovidPlots:
                                   'Bergen County',
                                   'Rutherford']
                        }
-        self.make_plot(plot_config)
+        self._make_plot(plot_config)
 
-    def do_tables(self, config=None):
+    def _do_tables(self, config=None):
         """ TODO: Print some tabular information of stats
 
         :param config: Dict TBD
@@ -472,11 +473,11 @@ class CovidPlots:
         config = {} if config is None else config
 
         if self._debug:
-            print('stats here')
+            print(config)
         else:
             pass
 
-    def make_plot(self, config):
+    def _make_plot(self, config):
         """ Plot town cases and averages
 
         :param config: dict of
