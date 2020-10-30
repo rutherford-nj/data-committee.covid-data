@@ -1,3 +1,4 @@
 [FORMAT]
 max-line-length=120
 good-names=ax
+min-public-methods=1
