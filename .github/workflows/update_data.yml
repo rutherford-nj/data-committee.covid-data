@@ -24,8 +24,7 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add .
-          git commit -m "Update data."
+          git commit -am "Update data."
 
       - name: Update charts
         run: |
@@ -43,7 +42,6 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add .
-          git commit -m "Update graphs and timestamp."
+          git commit -am "Update graphs and timestamp."
           git push
 
