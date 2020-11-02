@@ -8,7 +8,7 @@ on:
     paths: 
       - 'process_covid_data.py'
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0/15 0-1 * * *'
 
 jobs:
   # Get data from sources and store in repo.
@@ -16,27 +16,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      
-      - name: Write time
-        run: TZ=America/New_York date +"%A %B %d at %l:%M%P" | tee docs/last_updated
 
       - name: Fetch data
         run: cd data && go run *.go
+        
+      - name: Commit data changes
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git commit -am "Update data."
 
       - name: Update charts
         run: |
           docker build -t rutherford_covid_image .
-          docker run -v `pwd`:/work --entrypoint="/work/run.bash" rutherford_covid_image
+          docker run -v `pwd`:/work --entrypoint="/work/run.sh" rutherford_covid_image
 
       - name: Compress SVGs
         run: |
           docker run -v `pwd`:/work --entrypoint="/work/data/svgo.sh" node:15.0.1-alpine3.12
 
-      - name: Commit data changes
+      - name: Write time
+        run: TZ=America/New_York date +"%A %B %d at %l:%M%P" | tee docs/last_updated
+        
+      - name: Commit docs changes
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add .
-          git commit -m "Update data."
+          git commit -am "Update graphs and timestamp."
           git push
 
