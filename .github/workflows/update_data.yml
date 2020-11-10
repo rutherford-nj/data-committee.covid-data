@@ -8,7 +8,7 @@ on:
     paths: 
       - 'process_covid_data.py'
   schedule:
-    - cron: '0/15 0-1 * * *'
+    - cron: '0/15 0-2 * * *'
 
 jobs:
   # Get data from sources and store in repo.
