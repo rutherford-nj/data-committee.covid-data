@@ -17,32 +17,20 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Fetch data
-        run: cd data && go run *.go
-        
-      - name: Commit data changes
+      - name: Update data and charts
         run: |
+          cd data && go run *.go 
           git config user.name github-actions
           git config user.email github-actions@github.com
           timestamp=$(TZ=America/New_York date)
-          git commit -am "Latest data: ${timestamp}."
-
-      - name: Update charts
-        run: |
+          # Commit data changes, exit if there were none.
+          git commit -am "Latest data: ${timestamp}." || exit 0
+          # Update charts
           docker build -t rutherford_covid_image .
           docker run -v `pwd`:/work --entrypoint="/work/run.sh" rutherford_covid_image
-
-      - name: Compress SVGs
-        run: |
+          # Compress SVGs
           docker run -v `pwd`:/work --entrypoint="/work/data/svgo.sh" node:15.0.1-alpine3.12
-
-      - name: Write time
-        run: TZ=America/New_York date +"%A %B %d at %l:%M%P" | tee docs/last_updated
-        
-      - name: Commit docs changes
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+          TZ=America/New_York date +"%A %B %d at %l:%M%P" | tee docs/last_updated
           git commit -am "Update graphs and timestamp."
           git push
 
