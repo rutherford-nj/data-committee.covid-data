@@ -8,7 +8,7 @@ on:
     paths: 
       - 'process_covid_data.py'
   schedule:
-    - cron: '0/15 0-2 * * *'
+    - cron: '2,22,42 * * * *'
 
 jobs:
   # Get data from sources and store in repo.
@@ -24,7 +24,8 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git commit -am "Update data."
+          timestamp=$(TZ=America/New_York date)
+          git commit -am "Latest data: ${timestamp}."
 
       - name: Update charts
         run: |
