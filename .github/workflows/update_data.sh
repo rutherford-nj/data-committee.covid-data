@@ -3,6 +3,10 @@
 set -x
 
 cd data && go run *.go && cd ../
+
+# Ensure rutherford data is the CSV, not an error page.
+grep "Date,Total Cases,New Cases" data/rutherford_data.csv || exit 0
+
 git config user.name github-actions
 git config user.email github-actions@github.com
 timestamp=$(TZ=America/New_York date)
