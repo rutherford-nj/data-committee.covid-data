@@ -6,7 +6,7 @@ set -x
 cd data && go run *.go && cd ../
 
 # Ensure rutherford data is the CSV, not an error page.
-grep "Date,Total Cases,New Cases" data/rutherford_data.csv || exit 0
+grep "Date,Total Cases,New Cases" data/csv/rutherford_data.csv || exit 0
 
 # Setup local git config.
 git config user.name github-actions
