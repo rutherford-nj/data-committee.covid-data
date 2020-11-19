@@ -19,6 +19,7 @@ git commit -am "Latest data: ${timestamp}." || exit 0
 # Build image for running graphing code.
 docker build -t rutherford_covid_image .
 docker run -v `pwd`:/work --entrypoint="/work/run.sh" rutherford_covid_image
+docker run -v `pwd`:/work --entrypoint="/work/run.sh" --env COVID_SMA_WIN=7 rutherford_covid_image
 
 # Run svgo to optimize SVG images.
 docker run -v `pwd`:/work --entrypoint="/work/data/svgo.sh" node:15.0.1-alpine3.12

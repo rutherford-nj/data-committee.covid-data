@@ -5,13 +5,15 @@ This is very overengineered and was done for s+g
 
 Greg Recine <greg@gregrecine.com> Oct 30 2020
 """
+import os
+
 import seaborn as sns
 from cycler import cycler
 
 # Set some default params for data smoothing
 SmoothingParams = {
     # Simple moving average window
-    'SMA_WIN': 14,
+    'SMA_WIN': int(os.environ.get('COVID_SMA_WIN'), base=10) or 14,
 
     # Exponentially Weighted Moving Average span
     'EWMA_SPAN': 14  # spn=29, com=14 | spn=15, com=7
