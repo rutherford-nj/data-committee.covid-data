@@ -2,8 +2,11 @@
 
 set -x
 
+# Build image for running code.
+docker build -t rutherford_covid_image .
+
 # Run scraper.
-./data/fetch.sh
+docker run -v `pwd`:/work --entrypoint="/work/data/fetch.sh" rutherford_covid_image
 
 # Ensure rutherford data is the CSV, not an error page.
 grep "Date,Total Cases,New Cases" data/csv/rutherford_data.csv || exit 0
@@ -16,8 +19,6 @@ git config user.email github-actions@github.com
 timestamp=$(TZ=America/New_York date)
 git commit -am "Latest data: ${timestamp}." || exit 0
 
-# Build image for running graphing code.
-docker build -t rutherford_covid_image .
 docker run -v `pwd`:/work --entrypoint="/work/run.sh" rutherford_covid_image
 docker run -v `pwd`:/work --entrypoint="/work/run.sh" --env COVID_SMA_WIN=7 rutherford_covid_image
 
