@@ -3,7 +3,7 @@
 set -x
 
 # Run scraper.
-cd data && go run *.go && cd ../
+./data/fetch.sh
 
 # Ensure rutherford data is the CSV, not an error page.
 grep "Date,Total Cases,New Cases" data/csv/rutherford_data.csv || exit 0
