@@ -13,7 +13,7 @@ from cycler import cycler
 # Set some default params for data smoothing
 SmoothingParams = {
     # Simple moving average window
-    'SMA_WIN': int(os.environ.get('COVID_SMA_WIN', 14), base=10),
+    'SMA_WIN': int(os.environ.get('COVID_SMA_WIN', '14'), base=10),
 
     # Exponentially Weighted Moving Average span
     'EWMA_SPAN': 14  # spn=29, com=14 | spn=15, com=7
