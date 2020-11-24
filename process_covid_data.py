@@ -9,6 +9,7 @@ import os
 
 from lib import covid
 
+# testing comment for git
 MakeThesePlots = [
     covid.MakePlots.plot_new_cases_scaled_sma,       # All New Cases Scaled by SMA
     # covid.MakePlots.plot_new_cases_scaled_ewma,    # All New Cases Scaled by EWMA
