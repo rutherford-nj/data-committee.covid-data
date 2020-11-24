@@ -7,6 +7,7 @@ Greg Recine <greg@gregrecine.com> Oct 18 2020
 """
 import os
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
@@ -390,6 +391,67 @@ class MakePlots:
                                   'Rutherford']
                        }
         self._make_plot(plot_config)
+
+    def plot_new_cases_wow_scaled_sma(self):
+        """ Plots week over week cases across regions, scaled per 100K pop
+
+        :return: nothing, creates plot
+        """
+
+        def _plot_fn(ax):
+            region_list = ['US', 'NJ', 'Bergen', 'Rutherford']
+            # region_list = ['Rutherford']
+            y_col = 'New Cases / 100K'
+            for region in region_list:
+                df = self.covid_df[region]
+                data = self.wow(df[['Date',y_col]])
+                y_data = data.wow.rolling(self.sma_win).mean()
+                x_data = y_data.index
+                ax.plot(x_data, y_data)
+
+            return ax
+
+        plot_config = {'plot_fn': _plot_fn,
+                       'fname': 'new_cases_week-over-week_'+str(self.sma_win)+'avg',
+                       'title': 'New Cases Week-over-Week: '+str(self.sma_win)+' avg',
+                       'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
+                       }
+        self._make_plot(plot_config)
+
+    def plot_new_cases_slope_scaled_sma(self):
+        """ Plots first deriv of new cases across regions, scaled per 100K pop
+
+        :return: nothing, creates plot
+        """
+
+        def _plot_fn(ax):
+            region_list = ['US', 'NJ', 'Bergen', 'Rutherford']
+            # region_list = ['US']
+            y_col = str(self.sma_win)+'d avg / 100K'
+            for region in region_list:
+                df = self.covid_df[region]
+                data = df[['Date',y_col]].copy()
+                data['slope'] = np.gradient(data[y_col])
+                data['slope'] = data['slope'].rolling(7).mean()
+                y_data = data.slope
+                x_data = data.Date
+                ax.plot(x_data, y_data)
+
+            return ax
+
+        plot_config = {'plot_fn': _plot_fn,
+                       'fname': 'new_cases_per_100K_'+str(self.sma_win)+'_SMA_7d_slope',
+                       'title': 'New Cases 7d slope of '+str(self.sma_win)+' avg/100K',
+                       'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
+                       }
+        self._make_plot(plot_config)
+
+    def wow(self, df):
+        _df = df.copy()
+        _df['day_of_week'] = _df['Date'].dt.weekday
+        _df = _df.set_index('Date')
+        _df['wow'] = _df.groupby('day_of_week').diff()
+        return _df[['day_of_week','wow']]
 
     def _make_plot(self, config):
         """ Plot town cases and averages

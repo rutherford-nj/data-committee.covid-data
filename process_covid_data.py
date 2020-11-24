@@ -10,12 +10,14 @@ import os
 from lib import covid
 
 MakeThesePlots = [
-    covid.MakePlots.plot_new_cases_scaled_sma,    # All New Cases Scaled by SMA
-    # covid.MakePlots.plot_new_cases_scaled_ewma, # All New Cases Scaled by EWMA
-    # covid.MakePlots.plot_total_cases_scaled,    # Total New Cases Scaled
-    covid.MakePlots.plot_total_cases_scaled_sma,  # Total New Cases Scaled by SMA
-    covid.MakePlots.plot_local_new_cases,         # Rutherford new cases, unscaled
-    covid.MakePlots.plot_local_total_cases,       # Rutherford total cases, unscaled
+    covid.MakePlots.plot_new_cases_scaled_sma,       # All New Cases Scaled by SMA
+    # covid.MakePlots.plot_new_cases_scaled_ewma,    # All New Cases Scaled by EWMA
+    # covid.MakePlots.plot_total_cases_scaled,       # Total New Cases Scaled
+    covid.MakePlots.plot_total_cases_scaled_sma,     # Total New Cases Scaled by SMA
+    covid.MakePlots.plot_local_new_cases,            # Rutherford new cases, unscaled
+    covid.MakePlots.plot_local_total_cases,          # Rutherford total cases, unscaled
+    covid.MakePlots.plot_new_cases_wow_scaled_sma,   # Rutherford new week-over-week cases, unscaled
+    covid.MakePlots.plot_new_cases_slope_scaled_sma, # Rutherford X day slope of scaled, SMA new cases
 ]
 
 CalcTheseStats = [
