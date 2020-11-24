@@ -1,7 +1,5 @@
 #!/bin/sh
 
-set -x
-
 # Build image for running code, uncomment for local image building.
 # docker build -t rutherford_covid_image .
 
@@ -30,7 +28,9 @@ docker run -v `pwd`:/work --entrypoint="/work/run.sh" ghcr.io/bogosj/rutherford_
 docker run -v `pwd`:/work --entrypoint="/work/run.sh" --env COVID_SMA_WIN=7 ghcr.io/bogosj/rutherford_covid_image
 
 # Run svgo to optimize SVG images.
+echo "::group::Optimize SVGs"
 docker run -v `pwd`:/work --entrypoint="/work/data/svgo.sh" node:15.0.1-alpine3.12
+echo "::endgroup::"
 
 # Create timestamp file.
 TZ=America/New_York date +"%A %B %d at %l:%M%P" | tee docs/last_updated
