@@ -36,5 +36,6 @@ echo "::endgroup::"
 TZ=America/New_York date +"%A %B %d at %l:%M%P" | tee docs/last_updated
 
 # Commit web-ready files and push.
-git commit -am "Update graphs and timestamp."
+git add docs
+git commit -m "Update graphs and timestamp."
 git push
