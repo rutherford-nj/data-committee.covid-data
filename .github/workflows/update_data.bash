@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Build image for running code, uncomment for local image building.
 # docker build -t rutherford_covid_image .
@@ -18,8 +18,7 @@ git config --global user.email github-actions@github.com
 
 # Commit data changes. For scheduled runs, bail out of the workflow if there hasn't been a change in the data.
 timestamp=$(TZ=America/New_York date)
-if [ "${GITHUB_EVENT_NAME}" == "schedule" ]
-then
+if [[ "${GITHUB_EVENT_NAME}" == "schedule" ]]; then
   git commit -am "Latest data: ${timestamp}." || exit 0
 else
   git commit -am "Latest data: ${timestamp}."

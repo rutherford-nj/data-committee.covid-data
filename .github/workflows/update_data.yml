@@ -16,4 +16,4 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Update data and charts
-        run: ./.github/workflows/update_data.sh
+        run: ./.github/workflows/update_data.bash
