@@ -2,6 +2,8 @@
 
 set -x
 
+env
+
 # Build image for running code, uncomment for local image building.
 # docker build -t rutherford_covid_image .
 
