@@ -425,10 +425,10 @@ class MakePlots:
         def _plot_fn(ax):
             region_list = ['US', 'NJ', 'Bergen', 'Rutherford']
             # region_list = ['US']
-            y_col = str(self.sma_win)+'d avg / 100K'
+            y_col = str(self.sma_win) + 'd avg / 100K'
             for region in region_list:
                 df = self.covid_df[region]
-                data = df[['Date',y_col]].copy()
+                data = df[['Date', y_col]].copy()
                 data['slope'] = np.gradient(data[y_col])
                 data['slope'] = data['slope'].rolling(7).mean()
                 y_data = data.slope
@@ -438,11 +438,46 @@ class MakePlots:
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
-                       'fname': 'new_cases_per_100K_'+str(self.sma_win)+'_SMA_7d_slope',
-                       'title': 'New Cases 7d slope of '+str(self.sma_win)+' avg/100K',
+                       'fname': 'new_cases_per_100K_' + str(self.sma_win) + '_SMA_7d_slope',
+                       'title': 'New Cases 7d slope of ' + str(self.sma_win) + ' avg/100K',
                        'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
                        }
         self._make_plot(plot_config)
+
+    def plot_new_cases_scaled_sum(self):
+        """ Plots two week sum of new cases, scaled per 100K pop
+
+        :return: nothing, creates plot
+        """
+
+        def _plot_fn(ax):
+            region_list = ['US', 'NJ', 'Bergen', 'Rutherford']
+            # region_list = ['US']
+            y_col = 'New Cases / 100K'
+            # y_max = 0.0
+            for region in region_list:
+                _df = self.covid_df[region]
+                ax.plot(_df['Date'], _df[y_col].rolling(14).sum())
+                # y_max = max(y_max,_df[y_col].rolling(14).sum().max())
+
+            ax.axhline(10, color='green', linestyle=':')
+            ax.axhline(50, color='orange', linestyle=':')
+            ax.axhline(100, color='red', linestyle=':')
+
+            # ax.axhspan(0, 10, alpha=0.2, facecolor='green')
+            # ax.axhspan(10, 50, alpha=0.2, facecolor='yellow')
+            # ax.axhspan(50, 100, alpha=0.2, facecolor='orange')
+            # ax.axhspan(100, y_max, alpha=0.2, facecolor='red')
+
+            return ax
+
+        plot_config = {'plot_fn': _plot_fn,
+                       'fname': 'new_cases_per_100K_sum',
+                       'title': 'New Cases/100K 14d sum',
+                       'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
+                       }
+        self._make_plot(plot_config)
+
 
     def wow(self, df):
         _df = df.copy()

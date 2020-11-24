@@ -18,6 +18,7 @@ MakeThesePlots = [
     covid.MakePlots.plot_local_total_cases,          # Rutherford total cases, unscaled
     covid.MakePlots.plot_new_cases_wow_scaled_sma,   # Rutherford new week-over-week cases, unscaled
     covid.MakePlots.plot_new_cases_slope_scaled_sma, # Rutherford X day slope of scaled, SMA new cases
+    covid.MakePlots.plot_new_cases_scaled_sum        # Total New Cases scaled 14d sum ("Incidence")
 ]
 
 CalcTheseStats = [
