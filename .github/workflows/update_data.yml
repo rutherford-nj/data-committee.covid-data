@@ -1,8 +1,6 @@
 name: Update Data
 
 on:
-  repository_dispatch:
-    types: update-data
   workflow_dispatch:
   push:
     paths: 
