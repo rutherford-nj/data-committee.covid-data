@@ -228,25 +228,23 @@ class MakePlots:
         def _plot_fn(ax):
             _df = self.covid_df['Rutherford']
 
-            _df['New Cases std'] = _df[str(self.sma_win) + 'd avg'].rolling(self.sma_win, min_periods=1).std()
+            _df['New Cases std'] = _df['New Cases'].rolling(self.sma_win).mean().rolling(self.sma_win, min_periods=1).std()
 
-            cases_pos = _df[str(self.sma_win) + 'd avg'] + _df['New Cases std']
-            cases_neg = _df[str(self.sma_win) + 'd avg'] - _df['New Cases std']
+            cases_pos = _df['New Cases'].rolling(self.sma_win).mean() + _df['New Cases std']
+            cases_neg = _df['New Cases'].rolling(self.sma_win).mean() - _df['New Cases std']
 
-            ax.plot(_df['Date'], _df[str(self.sma_win) + 'd avg'])
             ax.fill_between(_df['Date'], cases_neg, cases_pos, alpha=0.2, facecolor='#089FFF')
-
-            # ax2 = ax.twinx()
-            # ax2.plot(_df['Date'], _df['Total Cases'], color='black')
-            # ax.plot(_df['Date'], _df['Total Cases'], color='black')
+            ax.plot(_df['Date'], _df['New Cases'].rolling(self.sma_win).mean())
+            ax.stem(_df['Date'], _df['New Cases'], linefmt='x:', markerfmt=' ', basefmt=' ')
 
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_Rutherford',
                        'title': 'Rutherford New Covid Cases',
-                       'legend': ['Daily Cases',
-                                  'Uncertainty']
+                       'legend': [str(self.sma_win) + 'd avg',
+                                  'Uncertainty',
+                                  'Daily Cases']
                        }
         self._make_plot(plot_config)
 
@@ -260,14 +258,14 @@ class MakePlots:
         def _plot_fn(ax):
             _df = self.covid_df['Rutherford']
 
-            _df['Total Cases std'] = _df[str(self.sma_win) + 'd avg Total Cases'].rolling(self.sma_win,
-                                                                                          min_periods=1).std()
+            _df['Total Cases std'] = _df['Total Cases'].rolling(self.sma_win).mean().rolling(self.sma_win, min_periods=1).std()
 
-            cases_pos = _df[str(self.sma_win) + 'd avg Total Cases'] + _df['Total Cases std']
-            cases_neg = _df[str(self.sma_win) + 'd avg Total Cases'] - _df['Total Cases std']
+            cases_pos = _df['Total Cases'] + _df['Total Cases std']
+            cases_neg = _df['Total Cases'] - _df['Total Cases std']
 
-            ax.plot(_df['Date'], _df[str(self.sma_win) + 'd avg Total Cases'])
             ax.fill_between(_df['Date'], cases_neg, cases_pos, alpha=0.2, facecolor='#089FFF')
+            # ax.plot(_df['Date'], _df['Total Cases'].rolling(self.sma_win).mean())
+            ax.plot(_df['Date'], _df['Total Cases'], 'b-')
 
             # ax2 = ax.twinx()
             # ax2.plot(_df['Date'], _df['Total Cases'], color='black')
