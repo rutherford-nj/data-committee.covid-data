@@ -10,6 +10,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import rpy2.robjects as robjects
 
 from .defaults import SmoothingParams, RegionNames, DataFileNames, DefaultPopulations, set_plot_defaults
 
@@ -478,6 +479,44 @@ class MakePlots:
                        }
         self._make_plot(plot_config)
 
+    def plot_new_cases_scaled_trajectory(self):
+        """ Plots trajectory slope of spline of 3d(?) avg of normalized new cases
+
+        :return: nothing, creates plot
+        """
+
+        def _plot_fn(ax):
+            region_list = ['US', 'NJ', 'Bergen', 'Rutherford']
+            # region_list = ['US']
+            y_col = 'New Cases / 100K'
+            # y_max = 0.0
+            for region in region_list:
+                _df = self.covid_df[region].reset_index(drop=True)
+                _df['incidence'] = _df[y_col].rolling(14).sum()
+                _df['incidence_3dAvg'] = _df['incidence'].rolling(3).mean()
+
+                x_val = _df.incidence_3dAvg.dropna().index.tolist()
+                y_val = _df.incidence_3dAvg.dropna().values
+                x_dates = _df[_df.index.isin(x_val)]['Date']
+
+                r_x = robjects.FloatVector(x_val)
+                r_y = robjects.FloatVector(y_val)
+
+                r_smooth_spline = robjects.r['smooth.spline']  # extract R function
+                spline_xy = r_smooth_spline(x=r_x, y=r_y)
+                spline = np.array(robjects.r['predict'](spline_xy, robjects.FloatVector(x_val)).rx2('y'))
+                slope = np.gradient(spline)
+
+                ax.plot(x_dates, slope)
+
+            return ax
+
+        plot_config = {'plot_fn': _plot_fn,
+                       'fname': 'new_cases_per100K_3d_trajectory',
+                       'title': 'New Cases/100K 3 Daytrajectory',
+                       'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
+                       }
+        self._make_plot(plot_config)
 
     def wow(self, df):
         _df = df.copy()
