@@ -512,7 +512,7 @@ class MakePlots:
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
-                       'fname': 'new_cases_per100K_3d_trajectory',
+                       'fname': 'new_cases_per_100K_3d_trajectory',
                        'title': 'New Cases/100K 3 Daytrajectory',
                        'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
                        }
