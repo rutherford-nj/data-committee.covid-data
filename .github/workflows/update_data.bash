@@ -24,6 +24,8 @@ else
   git commit -am "Latest data: ${timestamp}."
 fi
 
+rm docs/*
+
 docker run -v `pwd`:/work --entrypoint="/work/run.sh" ghcr.io/bogosj/rutherford_covid_image
 docker run -v `pwd`:/work --entrypoint="/work/run.sh" --env COVID_SMA_WIN=7 ghcr.io/bogosj/rutherford_covid_image
 
@@ -31,6 +33,9 @@ docker run -v `pwd`:/work --entrypoint="/work/run.sh" --env COVID_SMA_WIN=7 ghcr
 echo "::group::Optimize SVGs"
 docker run -v `pwd`:/work --entrypoint="/work/data/svgo.sh" node:15.0.1-alpine3.12
 echo "::endgroup::"
+
+# Ensure the files needed for rutherfordboronj.com are available, or exit.
+[ -f docs/total_cases_per_100K_14d_SMA.svg ] && [ -f docs/new_cases_per_100K_14d_SMA.svg ] || exit 1
 
 # Create timestamp file.
 TZ=America/New_York date +"%A %B %d at %l:%M%P" | tee docs/last_updated
