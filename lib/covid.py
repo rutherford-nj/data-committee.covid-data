@@ -426,11 +426,12 @@ class MakePlots:
         def _plot_fn(ax):
             region_list = ['US', 'NJ', 'Bergen', 'Rutherford']
             # region_list = ['US']
-            y_col = str(self.sma_win) + 'd avg / 100K'
+            # y_col = str(self.sma_win) + 'd avg / 100K'
+            y_col = 'New Cases / 100K'
             for region in region_list:
                 df = self.covid_df[region]
                 data = df[['Date', y_col]].copy()
-                data['slope'] = np.gradient(data[y_col])
+                data['slope'] = np.gradient(data[y_col].rolling(14).mean())
                 data['slope'] = data['slope'].rolling(7).mean()
                 y_data = data.slope
                 x_data = data.Date
@@ -440,7 +441,7 @@ class MakePlots:
 
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_per_100K_' + str(self.sma_win) + '_SMA_7d_slope',
-                       'title': 'New Cases 7d slope of ' + str(self.sma_win) + ' avg/100K',
+                       'title': 'New Cases 7d avg slope of ' + str(self.sma_win) + ' avg/100K',
                        'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
                        }
         self._make_plot(plot_config)
@@ -493,7 +494,7 @@ class MakePlots:
             for region in region_list:
                 _df = self.covid_df[region].reset_index(drop=True)
                 _df['incidence'] = _df[y_col].rolling(14).sum()
-                _df['incidence_3dAvg'] = _df['incidence'].rolling(3).mean()
+                _df['incidence_3dAvg'] = _df['incidence'].rolling(7).mean()
 
                 x_val = _df.incidence_3dAvg.dropna().index.tolist()
                 y_val = _df.incidence_3dAvg.dropna().values
@@ -512,8 +513,8 @@ class MakePlots:
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
-                       'fname': 'new_cases_per_100K_3d_trajectory',
-                       'title': 'New Cases/100K 3 Daytrajectory',
+                       'fname': 'new_cases_per_100K_7d_trajectory',
+                       'title': 'New Cases/100K 7 Daytrajectory',
                        'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
                        }
         self._make_plot(plot_config)
