@@ -15,6 +15,60 @@ import rpy2.robjects as robjects
 from .defaults import SmoothingParams, RegionNames, DataFileNames, DefaultPopulations, set_plot_defaults
 
 
+def std_dev(series, win, min_periods=1):
+    """ Return rolling standard deviation
+
+    :param series: pandas series
+    :param win: rolling window
+    :param min_periods: min periods to use (from start)
+    :return: pandas series
+    """
+    return series.rolling(win).mean().rolling(win, min_periods=min_periods).std()
+
+
+def sma(series, win):
+    """ Return rolling simple moving average
+
+    :param series: pandas series
+    :param win: rolling window
+    :return: pandas series
+    """
+    return series.rolling(win).mean()
+
+
+def ewma(series, spn):
+    """ Return rolling exponentialy weighted moving average
+
+    :param series: pandas series
+    :param spn: rolling window
+    :return: pandas series
+    """
+    return series.ewm(span=spn).mean()
+
+
+def wow(df):
+    """ Return dataframe with day on week and week-over-week difference
+
+    :param df: pandas dataframe ['Date', value to g=calc wow'
+    :return: pandas dataframe
+    """
+    _df = df.copy()
+    _df['day_of_week'] = _df['Date'].dt.weekday
+    _df = _df.set_index('Date')
+    _df['wow'] = _df.groupby('day_of_week').diff()
+    return _df[['day_of_week', 'wow']]
+
+
+def incidence(series, win):
+    """ The occurrence of new cases of disease (COVID-19) in a population over a specific period of time.
+
+    :param series: pandas series
+    :param win: time period
+    :return: pandas series
+    """
+    return series.rolling(win).sum()
+
+
 class Settings:
     """ Settings for the runs go here """
 
@@ -219,26 +273,7 @@ class MakePlots:
         """EWMA Span"""
         return self.covid_data.settings.ewma_spn
 
-    def get_std(self, series, win, min_periods=1):
-        return series.rolling(win).mean().rolling(win, min_periods=min_periods).std()
-
-    def get_sma(self, series, win):
-        return series.rolling(win).mean()
-
-    def get_ewma(self, series, spn):
-        return series.ewm(span=spn).mean()
-
-    def wow(self, df):
-        _df = df.copy()
-        _df['day_of_week'] = _df['Date'].dt.weekday
-        _df = _df.set_index('Date')
-        _df['wow'] = _df.groupby('day_of_week').diff()
-        return _df[['day_of_week','wow']]
-
-    def incidence(self, series, win):
-        return series.rolling(win).sum()
-
-    def plot_local_new_cases(self):
+    def rutherford_new_cases(self):
         """ Plot Rutherford local case numbers and -/+ 1 std
 
         :return: nothing, creates plot
@@ -248,8 +283,8 @@ class MakePlots:
         def _plot_fn(ax):
             _df = self.covid_df['Rutherford']
 
-            _df['New Cases std'] = self.get_std(_df['New Cases'], self.sma_win)
-            _df['New Cases sma'] = self.get_sma(_df['New Cases'], self.sma_win)
+            _df['New Cases std'] = std_dev(_df['New Cases'], self.sma_win)
+            _df['New Cases sma'] = sma(_df['New Cases'], self.sma_win)
 
             cases_pos = _df['New Cases sma'] + _df['New Cases std']
             cases_neg = _df['New Cases sma'] - _df['New Cases std']
@@ -269,7 +304,7 @@ class MakePlots:
                        }
         self._make_plot(plot_config)
 
-    def plot_local_total_cases(self):
+    def rutherford_total_cases(self):
         """ Plot Rutherford local total case numbers and -/+ 1 std
 
         :return: nothing, creates plot
@@ -279,7 +314,7 @@ class MakePlots:
         def _plot_fn(ax):
             _df = self.covid_df['Rutherford']
 
-            _df['Total Cases std'] = self.get_std(_df['Total Cases'], self.sma_win)
+            _df['Total Cases std'] = std_dev(_df['Total Cases'], self.sma_win)
             # _df['Total Cases sma'] = self.get_sma(_df['Total Cases'], self.sma_win)
 
             cases_pos = _df['Total Cases'] + _df['Total Cases std']
@@ -299,7 +334,7 @@ class MakePlots:
                        }
         self._make_plot(plot_config)
 
-    def plot_new_cases_scaled_sma(self):
+    def new_cases_norm_sma(self):
         """ Plots new cases SMA across regions, scaled per 100K pop
 
         :return: nothing, creates plot
@@ -307,13 +342,12 @@ class MakePlots:
 
         # All New Cases Scaled by SMA
         def _plot_fn(ax):
-
             # regions = ['US', 'NJ', 'Bergen', 'Counties', 'Rutherford']
             regions = ['US', 'NJ', 'Bergen', 'Rutherford']
 
             for region in regions:
                 _df = self.covid_df[region]
-                ax.plot(_df['Date'], self.get_sma(_df['New Cases / 100K'], self.sma_win))
+                ax.plot(_df['Date'], sma(_df['New Cases / 100K'], self.sma_win))
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
@@ -327,20 +361,19 @@ class MakePlots:
                        }
         self._make_plot(plot_config)
 
-    def plot_new_cases_scaled_ewma(self):
+    def new_cases_norm_ewma(self):
         """ Plots new cases EWMA across regions, scaled per 100K pop
 
         :return: nothing, creates plot
         """
 
         def _plot_fn(ax):
-
             # regions = ['US', 'NJ', 'Bergen', 'Counties', 'Rutherford']
             regions = ['US', 'NJ', 'Bergen', 'Rutherford']
 
             for region in regions:
                 _df = self.covid_df[region]
-                ax.plot(_df['Date'], self.get_sma(_df['New Cases / 100K'], self.ewma_spn))
+                ax.plot(_df['Date'], sma(_df['New Cases / 100K'], self.ewma_spn))
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
@@ -354,14 +387,13 @@ class MakePlots:
                        }
         self._make_plot(plot_config)
 
-    def plot_total_cases_scaled(self):
+    def total_cases_norm(self):
         """ Plots total cases across regions, scaled per 100K pop
 
         :return: nothing, creates plot
         """
 
         def _plot_fn(ax):
-
             # regions = ['US', 'NJ', 'Bergen', 'Counties', 'Rutherford']
             regions = ['US', 'NJ', 'Bergen', 'Rutherford']
 
@@ -381,7 +413,7 @@ class MakePlots:
                        }
         self._make_plot(plot_config)
 
-    def plot_total_cases_scaled_sma(self):
+    def total_cases_norm_sma(self):
         """ Plots total cases across regions, scaled per 100K pop
 
         :return: nothing, creates plot
@@ -393,7 +425,7 @@ class MakePlots:
 
             for region in regions:
                 _df = self.covid_df[region]
-                ax.plot(_df['Date'], self.get_sma(_df['Total Cases / 100K'], self.sma_win))
+                ax.plot(_df['Date'], sma(_df['Total Cases / 100K'], self.sma_win))
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
@@ -407,7 +439,7 @@ class MakePlots:
                        }
         self._make_plot(plot_config)
 
-    def plot_new_cases_wow_scaled_sma(self):
+    def new_cases_norm_sma_wow(self):
         """ Plots week over week cases across regions, scaled per 100K pop
 
         :return: nothing, creates plot
@@ -419,18 +451,18 @@ class MakePlots:
             y_col = 'New Cases / 100K'
             for region in region_list:
                 df = self.covid_df[region]
-                wow_df = self.wow(df[['Date',y_col]])
-                ax.plot(wow_df.index, self.get_sma(wow_df.wow,self.sma_win))
+                wow_df = wow(df[['Date', y_col]])
+                ax.plot(wow_df.index, sma(wow_df.wow, self.sma_win))
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
-                       'fname': 'new_cases_week-over-week_'+str(self.sma_win)+'avg',
-                       'title': 'New Cases Week-over-Week: '+str(self.sma_win)+' avg',
+                       'fname': 'new_cases_week-over-week_' + str(self.sma_win) + 'avg',
+                       'title': 'New Cases Week-over-Week: ' + str(self.sma_win) + ' avg',
                        'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
                        }
         self._make_plot(plot_config)
 
-    def plot_new_cases_slope_scaled_sma(self):
+    def new_cases_norm_sma_slope(self):
         """ Plots first deriv of new cases across regions, scaled per 100K pop
 
         :return: nothing, creates plot
@@ -441,8 +473,8 @@ class MakePlots:
             y_col = 'New Cases / 100K'
             for region in region_list:
                 _df = self.covid_df[region]
-                _df['slope'] = np.gradient(self.get_sma(_df[y_col], self.sma_win))
-                _df['slope'] = self.get_sma(_df['slope'], win=7)
+                _df['slope'] = np.gradient(sma(_df[y_col], self.sma_win))
+                _df['slope'] = sma(_df['slope'], win=7)
                 ax.plot(_df.Date, _df.slope)
             return ax
 
@@ -453,7 +485,7 @@ class MakePlots:
                        }
         self._make_plot(plot_config)
 
-    def plot_new_cases_scaled_sum(self):
+    def incidence(self):
         """ Plots two week sum of new cases, scaled per 100K pop
 
         :return: nothing, creates plot
@@ -464,7 +496,7 @@ class MakePlots:
             y_col = 'New Cases / 100K'
             for region in region_list:
                 _df = self.covid_df[region]
-                ax.plot(_df['Date'], self.incidence(_df[y_col],14))
+                ax.plot(_df['Date'], incidence(_df[y_col], 14))
 
             ax.axhline(10, color='green', linestyle=':')
             ax.axhline(50, color='orange', linestyle=':')
@@ -479,7 +511,7 @@ class MakePlots:
                        }
         self._make_plot(plot_config)
 
-    def plot_new_cases_scaled_trajectory(self):
+    def trajectory(self):
         """ Plots trajectory slope of spline of 3d(?) avg of normalized new cases
 
         :return: nothing, creates plot
@@ -490,8 +522,8 @@ class MakePlots:
             y_col = 'New Cases / 100K'
             for region in region_list:
                 _df = self.covid_df[region].reset_index(drop=True)
-                _df['incidence'] = self.incidence(_df[y_col],14)
-                _df['incidence_sma'] = self.get_sma(_df['incidence'], 3)
+                _df['incidence'] = incidence(_df[y_col], 14)
+                _df['incidence_sma'] = sma(_df['incidence'], 3)
 
                 x_val = _df.incidence_sma.dropna().index.tolist()
                 y_val = _df.incidence_sma.dropna().values
@@ -511,7 +543,7 @@ class MakePlots:
 
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_per_100K_3d_trajectory',
-                       'title': 'New Cases/100K 3 Daytrajectory',
+                       'title': 'New Cases/100K 3 Day trajectory',
                        'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
                        }
         self._make_plot(plot_config)
