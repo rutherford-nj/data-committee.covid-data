@@ -25,6 +25,8 @@ RegionNames = {'US': 'United_States',
                'Counties': 'NJ_Counties',
                'Rutherford': 'Rutherford'}
 
+PlotRegions = ['US', 'NJ', 'Bergen', 'Rutherford']
+
 # The data we're importing default file names
 DataFileNames = {RegionNames['US']: 'covid_tracking_us.csv',
                  RegionNames['NJ']: 'covid_tracking_nj.csv',
@@ -40,7 +42,7 @@ DefaultPopulations[RegionNames['Counties']] = (DefaultPopulations[RegionNames['N
                                                - DefaultPopulations[RegionNames['Bergen']])
 
 
-def set_plot_defaults():
+def plot_defaults():
     """ Set up ploting defaults """
 
     # Black, Green, Orange, Blue
