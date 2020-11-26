@@ -62,7 +62,7 @@ def incidence(series, win):
     return series.rolling(win).sum()
 
 
-def smooth_slope(cases_df, y_col):
+def smooth_slope(cases_df, y_col, inc_win, sma_win, spar=0.5):
     """ Return the slope of a regularized smooth spline of the incidence SMA
 
     :param cases_df:
@@ -70,8 +70,8 @@ def smooth_slope(cases_df, y_col):
     :return:
     """
     _df = cases_df.reset_index(drop=True)
-    _df['incidence'] = incidence(_df[y_col], 14)
-    _df['incidence_sma'] = sma(_df['incidence'], 3)
+    _df['incidence'] = incidence(_df[y_col], inc_win)
+    _df['incidence_sma'] = sma(_df['incidence'], sma_win)
 
     x_val = _df.incidence_sma.dropna().index.tolist()
     y_val = _df.incidence_sma.dropna().values
@@ -81,7 +81,7 @@ def smooth_slope(cases_df, y_col):
     r_y = robjects.FloatVector(y_val)
 
     r_smooth_spline = robjects.r['smooth.spline']  # extract R function
-    spline_xy = r_smooth_spline(x=r_x, y=r_y, spar=0.5)
+    spline_xy = r_smooth_spline(x=r_x, y=r_y, spar=spar)
     spline = np.array(robjects.r['predict'](spline_xy, robjects.FloatVector(x_val)).rx2('y'))
     slope = np.gradient(spline)
 

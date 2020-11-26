@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 from .defaults import SmoothingParams, RegionNames, DataFileNames, DefaultPopulations, plot_defaults, PlotRegions
-from .utils import std_dev, sma, wow, ewma, incidence
+from .utils import std_dev, sma, wow, ewma, incidence, smooth_slope
 
 
 class Settings:
@@ -450,7 +450,7 @@ class MakePlots:
             y_col = 'New Cases / 100K'
             for region in regions:
                 _df = self.covid_df[region]
-                x_dates, slope = smooth_slope(_df, y_col)
+                x_dates, slope = smooth_slope(_df, y_col, inc_win=14, sma_win=3, spar=0.5)
                 ax.plot(x_dates, slope)
             return ax
 
