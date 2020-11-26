@@ -219,6 +219,25 @@ class MakePlots:
         """EWMA Span"""
         return self.covid_data.settings.ewma_spn
 
+    def get_std(self, series, win, min_periods=1):
+        return series.rolling(win).mean().rolling(win, min_periods=min_periods).std()
+
+    def get_sma(self, series, win):
+        return series.rolling(win).mean()
+
+    def get_ewma(self, series, spn):
+        return series.ewm(span=spn).mean()
+
+    def wow(self, df):
+        _df = df.copy()
+        _df['day_of_week'] = _df['Date'].dt.weekday
+        _df = _df.set_index('Date')
+        _df['wow'] = _df.groupby('day_of_week').diff()
+        return _df[['day_of_week','wow']]
+
+    def incidence(self, series, win):
+        return series.rolling(win).sum()
+
     def plot_local_new_cases(self):
         """ Plot Rutherford local case numbers and -/+ 1 std
 
@@ -229,13 +248,14 @@ class MakePlots:
         def _plot_fn(ax):
             _df = self.covid_df['Rutherford']
 
-            _df['New Cases std'] = _df['New Cases'].rolling(self.sma_win).mean().rolling(self.sma_win, min_periods=1).std()
+            _df['New Cases std'] = self.get_std(_df['New Cases'], self.sma_win)
+            _df['New Cases sma'] = self.get_sma(_df['New Cases'], self.sma_win)
 
-            cases_pos = _df['New Cases'].rolling(self.sma_win).mean() + _df['New Cases std']
-            cases_neg = _df['New Cases'].rolling(self.sma_win).mean() - _df['New Cases std']
+            cases_pos = _df['New Cases sma'] + _df['New Cases std']
+            cases_neg = _df['New Cases sma'] - _df['New Cases std']
 
             ax.fill_between(_df['Date'], cases_neg, cases_pos, alpha=0.2, facecolor='#089FFF')
-            ax.plot(_df['Date'], _df['New Cases'].rolling(self.sma_win).mean())
+            ax.plot(_df['Date'], _df['New Cases sma'])
             ax.stem(_df['Date'], _df['New Cases'], linefmt='x:', markerfmt=' ', basefmt=' ')
 
             return ax
@@ -259,18 +279,15 @@ class MakePlots:
         def _plot_fn(ax):
             _df = self.covid_df['Rutherford']
 
-            _df['Total Cases std'] = _df['Total Cases'].rolling(self.sma_win).mean().rolling(self.sma_win, min_periods=1).std()
+            _df['Total Cases std'] = self.get_std(_df['Total Cases'], self.sma_win)
+            # _df['Total Cases sma'] = self.get_sma(_df['Total Cases'], self.sma_win)
 
             cases_pos = _df['Total Cases'] + _df['Total Cases std']
             cases_neg = _df['Total Cases'] - _df['Total Cases std']
 
             ax.fill_between(_df['Date'], cases_neg, cases_pos, alpha=0.2, facecolor='#089FFF')
-            # ax.plot(_df['Date'], _df['Total Cases'].rolling(self.sma_win).mean())
+            # ax.plot(_df['Date'], _df['Total Cases sma'])
             ax.plot(_df['Date'], _df['Total Cases'], 'b-')
-
-            # ax2 = ax.twinx()
-            # ax2.plot(_df['Date'], _df['Total Cases'], color='black')
-            # ax.plot(_df['Date'], _df['Total Cases'], color='black')
 
             return ax
 
@@ -289,17 +306,17 @@ class MakePlots:
         """
 
         # All New Cases Scaled by SMA
-        def _new_cases_scaled_sma(ax):
-            ax.plot(self.covid_df['US']['Date'], self.covid_df['US'][str(self.sma_win) + 'd avg / 100K'])
-            ax.plot(self.covid_df['NJ']['Date'], self.covid_df['NJ'][str(self.sma_win) + 'd avg / 100K'])
-            # ax.plot(self.df['Counties']['Date'], self.df['Counties'][str(self.sma_win) + 'd avg / 100K'])
-            ax.plot(self.covid_df['Bergen']['Date'], self.covid_df['Bergen'][str(self.sma_win) + 'd avg / 100K'])
-            ax.plot(self.covid_df['Rutherford']['Date'],
-                    self.covid_df['Rutherford'][str(self.sma_win) + 'd avg / 100K'])
+        def _plot_fn(ax):
 
+            # regions = ['US', 'NJ', 'Bergen', 'Counties', 'Rutherford']
+            regions = ['US', 'NJ', 'Bergen', 'Rutherford']
+
+            for region in regions:
+                _df = self.covid_df[region]
+                ax.plot(_df['Date'], self.get_sma(_df['New Cases / 100K'], self.sma_win))
             return ax
 
-        plot_config = {'plot_fn': _new_cases_scaled_sma,
+        plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_per_100K_' + str(self.sma_win) + 'd_SMA',
                        'title': 'New Cases / 100K residents -- ' + str(self.sma_win) + ' day average',
                        'legend': ['United States',
@@ -316,17 +333,17 @@ class MakePlots:
         :return: nothing, creates plot
         """
 
-        def _new_cases_scaled_ewma(ax):
-            ax.plot(self.covid_df['US']['Date'], self.covid_df['US'][str(self.ewma_spn) + 'd ewma / 100K'])
-            ax.plot(self.covid_df['NJ']['Date'], self.covid_df['NJ'][str(self.ewma_spn) + 'd ewma / 100K'])
-            # ax.plot(self.df['Counties']['Date'], self.df['Counties'][str(self.ewma_spn) + 'd ewma / 100K'])
-            ax.plot(self.covid_df['Bergen']['Date'], self.covid_df['Bergen'][str(self.ewma_spn) + 'd ewma / 100K'])
-            ax.plot(self.covid_df['Rutherford']['Date'],
-                    self.covid_df['Rutherford'][str(self.ewma_spn) + 'd ewma / 100K'])
+        def _plot_fn(ax):
 
+            # regions = ['US', 'NJ', 'Bergen', 'Counties', 'Rutherford']
+            regions = ['US', 'NJ', 'Bergen', 'Rutherford']
+
+            for region in regions:
+                _df = self.covid_df[region]
+                ax.plot(_df['Date'], self.get_sma(_df['New Cases / 100K'], self.ewma_spn))
             return ax
 
-        plot_config = {'plot_fn': _new_cases_scaled_ewma,
+        plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_per_100K_' + str(self.ewma_spn) + 'd_EWMA',
                        'title': 'New Cases / 100K residents -- ' + str(self.ewma_spn) + ' day weighted average',
                        'legend': ['United States',
@@ -343,16 +360,17 @@ class MakePlots:
         :return: nothing, creates plot
         """
 
-        def _total_cases_scaled(ax):
-            ax.plot(self.covid_df['US']['Date'], self.covid_df['US']['Total Cases / 100K'])
-            ax.plot(self.covid_df['NJ']['Date'], self.covid_df['NJ']['Total Cases / 100K'])
-            # ax.plot(self.df['Counties']['Date'], self.df['Counties']['Total Cases / 100K'])
-            ax.plot(self.covid_df['Bergen']['Date'], self.covid_df['Bergen']['Total Cases / 100K'])
-            ax.plot(self.covid_df['Rutherford']['Date'], self.covid_df['Rutherford']['Total Cases / 100K'])
+        def _plot_fn(ax):
 
+            # regions = ['US', 'NJ', 'Bergen', 'Counties', 'Rutherford']
+            regions = ['US', 'NJ', 'Bergen', 'Rutherford']
+
+            for region in regions:
+                _df = self.covid_df[region]
+                ax.plot(_df['Date'], _df['New Cases / 100K'])
             return ax
 
-        plot_config = {'plot_fn': _total_cases_scaled,
+        plot_config = {'plot_fn': _plot_fn,
                        'fname': 'total_cases_per_100K',
                        'title': 'Total cases / 100K residents',
                        'legend': ['United States',
@@ -369,18 +387,16 @@ class MakePlots:
         :return: nothing, creates plot
         """
 
-        def _total_cases_scaled_sma(ax):
-            ax.plot(self.covid_df['US']['Date'], self.covid_df['US'][str(self.sma_win) + 'd avg Total Cases / 100K'])
-            ax.plot(self.covid_df['NJ']['Date'], self.covid_df['NJ'][str(self.sma_win) + 'd avg Total Cases / 100K'])
-            # ax.plot(df['Counties']['Date'], self.df['Counties'][str(self.sma_win) + 'd avg Total Cases / 100K'])
-            ax.plot(self.covid_df['Bergen']['Date'],
-                    self.covid_df['Bergen'][str(self.sma_win) + 'd avg Total Cases / 100K'])
-            ax.plot(self.covid_df['Rutherford']['Date'],
-                    self.covid_df['Rutherford'][str(self.sma_win) + 'd avg Total Cases / 100K'])
+        def _plot_fn(ax):
+            # regions = ['US', 'NJ', 'Bergen', 'Counties', 'Rutherford']
+            regions = ['US', 'NJ', 'Bergen', 'Rutherford']
 
+            for region in regions:
+                _df = self.covid_df[region]
+                ax.plot(_df['Date'], self.get_sma(_df['Total Cases / 100K'], self.sma_win))
             return ax
 
-        plot_config = {'plot_fn': _total_cases_scaled_sma,
+        plot_config = {'plot_fn': _plot_fn,
                        'fname': 'total_cases_per_100K_' + str(self.sma_win) + 'd_SMA',
                        'title': 'Total cases / 100K residents -- ' + str(self.sma_win) + ' day average',
                        'legend': ['United States',
@@ -403,11 +419,8 @@ class MakePlots:
             y_col = 'New Cases / 100K'
             for region in region_list:
                 df = self.covid_df[region]
-                data = self.wow(df[['Date',y_col]])
-                y_data = data.wow.rolling(self.sma_win).mean()
-                x_data = y_data.index
-                ax.plot(x_data, y_data)
-
+                wow_df = self.wow(df[['Date',y_col]])
+                ax.plot(wow_df.index, self.get_sma(wow_df.wow,self.sma_win))
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
@@ -425,22 +438,16 @@ class MakePlots:
 
         def _plot_fn(ax):
             region_list = ['US', 'NJ', 'Bergen', 'Rutherford']
-            # region_list = ['US']
-            # y_col = str(self.sma_win) + 'd avg / 100K'
             y_col = 'New Cases / 100K'
             for region in region_list:
-                df = self.covid_df[region]
-                data = df[['Date', y_col]].copy()
-                data['slope'] = np.gradient(data[y_col].rolling(14).mean())
-                data['slope'] = data['slope'].rolling(7).mean()
-                y_data = data.slope
-                x_data = data.Date
-                ax.plot(x_data, y_data)
-
+                _df = self.covid_df[region]
+                _df['slope'] = np.gradient(self.get_sma(_df[y_col], self.sma_win))
+                _df['slope'] = self.get_sma(_df['slope'], win=7)
+                ax.plot(_df.Date, _df.slope)
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
-                       'fname': 'new_cases_per_100K_' + str(self.sma_win) + '_SMA_7d_slope',
+                       'fname': 'new_cases_per_100K_' + str(self.sma_win) + 'd_SMA_7d_slope',
                        'title': 'New Cases 7d avg slope of ' + str(self.sma_win) + ' avg/100K',
                        'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
                        }
@@ -454,28 +461,20 @@ class MakePlots:
 
         def _plot_fn(ax):
             region_list = ['US', 'NJ', 'Bergen', 'Rutherford']
-            # region_list = ['US']
             y_col = 'New Cases / 100K'
-            # y_max = 0.0
             for region in region_list:
                 _df = self.covid_df[region]
-                ax.plot(_df['Date'], _df[y_col].rolling(14).sum())
-                # y_max = max(y_max,_df[y_col].rolling(14).sum().max())
+                ax.plot(_df['Date'], self.incidence(_df[y_col],14))
 
             ax.axhline(10, color='green', linestyle=':')
             ax.axhline(50, color='orange', linestyle=':')
             ax.axhline(100, color='red', linestyle=':')
 
-            # ax.axhspan(0, 10, alpha=0.2, facecolor='green')
-            # ax.axhspan(10, 50, alpha=0.2, facecolor='yellow')
-            # ax.axhspan(50, 100, alpha=0.2, facecolor='orange')
-            # ax.axhspan(100, y_max, alpha=0.2, facecolor='red')
-
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
-                       'fname': 'new_cases_per_100K_sum',
-                       'title': 'New Cases/100K 14d sum',
+                       'fname': 'new_cases_per_100K_incindence',
+                       'title': 'New Cases/100K 14d incidence (sum)',
                        'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
                        }
         self._make_plot(plot_config)
@@ -488,23 +487,21 @@ class MakePlots:
 
         def _plot_fn(ax):
             region_list = ['US', 'NJ', 'Bergen', 'Rutherford']
-            # region_list = ['US']
             y_col = 'New Cases / 100K'
-            # y_max = 0.0
             for region in region_list:
                 _df = self.covid_df[region].reset_index(drop=True)
-                _df['incidence'] = _df[y_col].rolling(14).sum()
-                _df['incidence_3dAvg'] = _df['incidence'].rolling(7).mean()
+                _df['incidence'] = self.incidence(_df[y_col],14)
+                _df['incidence_sma'] = self.get_sma(_df['incidence'], 3)
 
-                x_val = _df.incidence_3dAvg.dropna().index.tolist()
-                y_val = _df.incidence_3dAvg.dropna().values
+                x_val = _df.incidence_sma.dropna().index.tolist()
+                y_val = _df.incidence_sma.dropna().values
                 x_dates = _df[_df.index.isin(x_val)]['Date']
 
                 r_x = robjects.FloatVector(x_val)
                 r_y = robjects.FloatVector(y_val)
 
                 r_smooth_spline = robjects.r['smooth.spline']  # extract R function
-                spline_xy = r_smooth_spline(x=r_x, y=r_y)
+                spline_xy = r_smooth_spline(x=r_x, y=r_y, spar=0.5)
                 spline = np.array(robjects.r['predict'](spline_xy, robjects.FloatVector(x_val)).rx2('y'))
                 slope = np.gradient(spline)
 
@@ -513,18 +510,11 @@ class MakePlots:
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
-                       'fname': 'new_cases_per_100K_7d_trajectory',
-                       'title': 'New Cases/100K 7 Daytrajectory',
+                       'fname': 'new_cases_per_100K_3d_trajectory',
+                       'title': 'New Cases/100K 3 Daytrajectory',
                        'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
                        }
         self._make_plot(plot_config)
-
-    def wow(self, df):
-        _df = df.copy()
-        _df['day_of_week'] = _df['Date'].dt.weekday
-        _df = _df.set_index('Date')
-        _df['wow'] = _df.groupby('day_of_week').diff()
-        return _df[['day_of_week','wow']]
 
     def _make_plot(self, config):
         """ Plot town cases and averages
