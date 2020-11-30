@@ -26,8 +26,8 @@ fi
 
 rm docs/*
 
-docker run -v `pwd`:/work --entrypoint="/work/run.sh" ghcr.io/bogosj/rutherford_covid_image
 docker run -v `pwd`:/work --entrypoint="/work/run.sh" --env COVID_SMA_WIN=7 ghcr.io/bogosj/rutherford_covid_image
+docker run -v `pwd`:/work --entrypoint="/work/run.sh" ghcr.io/bogosj/rutherford_covid_image
 
 # Run svgo to optimize SVG images.
 echo "::group::Optimize SVGs"
