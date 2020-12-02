@@ -285,11 +285,7 @@ class MakePlots:
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_per_100K_' + str(self.sma_win) + 'd_SMA',
                        'title': 'New Cases / 100K residents -- ' + str(self.sma_win) + ' day average',
-                       'legend': ['United States',
-                                  'New Jersey',
-                                  # 'Other Counties',
-                                  'Bergen County',
-                                  'Rutherford']
+                       'legend': PlotRegions
                        }
         self._make_plot(plot_config)
 
@@ -310,11 +306,7 @@ class MakePlots:
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_per_100K_' + str(self.ewma_spn) + 'd_EWMA',
                        'title': 'New Cases / 100K residents -- ' + str(self.ewma_spn) + ' day weighted average',
-                       'legend': ['United States',
-                                  'New Jersey',
-                                  # 'Other Counties',
-                                  'Bergen County',
-                                  'Rutherford']
+                       'legend': PlotRegions
                        }
         self._make_plot(plot_config)
 
@@ -335,11 +327,7 @@ class MakePlots:
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'total_cases_per_100K',
                        'title': 'Total cases / 100K residents',
-                       'legend': ['United States',
-                                  'New Jersey',
-                                  # 'Other Counties',
-                                  'Bergen County',
-                                  'Rutherford']
+                       'legend': PlotRegions
                        }
         self._make_plot(plot_config)
 
@@ -360,11 +348,7 @@ class MakePlots:
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'total_cases_per_100K_' + str(self.sma_win) + 'd_SMA',
                        'title': 'Total cases / 100K residents -- ' + str(self.sma_win) + ' day average',
-                       'legend': ['United States',
-                                  'New Jersey',
-                                  # 'Other Counties',
-                                  'Bergen County',
-                                  'Rutherford']
+                       'legend': PlotRegions
                        }
         self._make_plot(plot_config)
 
@@ -381,12 +365,15 @@ class MakePlots:
                 _df = self.covid_df[region]
                 wow_df = wow(_df[['Date', y_col]])
                 ax.plot(wow_df.index, sma(wow_df.wow, self.sma_win))
+
+            ax.axhline(0, color='red', linestyle=':')
+
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_week-over-week_' + str(self.sma_win) + 'avg',
                        'title': 'New Cases Week-over-Week: ' + str(self.sma_win) + ' avg',
-                       'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
+                       'legend': PlotRegions
                        }
         self._make_plot(plot_config)
 
@@ -409,7 +396,7 @@ class MakePlots:
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_per_100K_' + str(self.sma_win) + 'd_SMA_7d_slope',
                        'title': 'New Cases 7d avg slope of ' + str(self.sma_win) + ' avg/100K',
-                       'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
+                       'legend': PlotRegions
                        }
         self._make_plot(plot_config)
 
