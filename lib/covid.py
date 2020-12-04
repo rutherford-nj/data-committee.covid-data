@@ -391,7 +391,9 @@ class MakePlots:
                 _df['slope'] = np.gradient(sma(_df[y_col], self.sma_win))
                 _df['slope'] = sma(_df['slope'], win=7)
                 ax.plot(_df.Date, _df.slope)
+            ax.axhline(0, color='red', linestyle=':')
             return ax
+
 
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_per_100K_' + str(self.sma_win) + 'd_SMA_7d_slope',
@@ -439,6 +441,7 @@ class MakePlots:
                 _df = self.covid_df[region]
                 x_dates, slope = smooth_slope(_df, y_col, inc_win=14, sma_win=3, spar=0.5)
                 ax.plot(x_dates, slope)
+            ax.axhline(0, color='red', linestyle=':')
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
