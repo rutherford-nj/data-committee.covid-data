@@ -9,8 +9,25 @@ on:
     - cron: '2,22,42 * * * *'
 
 jobs:
+  # Build and cache the docker image from the repo.
+  build_docker_image:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - id: cache-docker
+      uses: actions/cache@v1
+      with:
+        path: /tmp/docker-save
+        key: docker-save-${{ hashFiles('Dockerfile') }}
+    - run: docker load -i /tmp/docker-save/snapshot.tar || true
+      if: steps.cache-docker.outputs.cache-hit == 'true'
+    - run: docker build . -t rutherford-covid-image --cache-from=rutherford-covid-image-cache
+    - run: docker tag rutherford-covid-image rutherford-covid-image-cache && mkdir -p /tmp/docker-save && docker save rutherford-covid-image-cache -o /tmp/docker-save/snapshot.tar && ls -lh /tmp/docker-save || true
+      if: always() && steps.cache-docker.outputs.cache-hit != 'true'
+  
   # Get data from sources and store in repo.
   update_data:
+    needs: [build_docker_image]
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
