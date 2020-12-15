@@ -1,12 +1,8 @@
 #!/bin/bash
 
-# Build image for running code, uncomment for local image building.
-# docker build -t rutherford_covid_image .
-
 # Run scraper.
-
 echo "::group::Fetch Data"
-docker run -v `pwd`:/work --entrypoint="/work/data/fetch.sh" ghcr.io/bogosj/rutherford_covid_image
+docker run -v `pwd`:/work --entrypoint="/work/data/fetch.sh" rutherford-covid-image
 echo "::endgroup::"
 
 # Ensure rutherford data is the CSV, not an error page.
@@ -26,8 +22,8 @@ fi
 
 rm docs/*
 
-docker run -v `pwd`:/work --entrypoint="/work/run.sh" --env COVID_SMA_WIN=7 ghcr.io/bogosj/rutherford_covid_image
-docker run -v `pwd`:/work --entrypoint="/work/run.sh" ghcr.io/bogosj/rutherford_covid_image
+docker run -v `pwd`:/work --entrypoint="/work/run.sh" --env COVID_SMA_WIN=7 rutherford-covid-image
+docker run -v `pwd`:/work --entrypoint="/work/run.sh" rutherford-covid-image
 
 # Run svgo to optimize SVG images.
 echo "::group::Optimize SVGs"
