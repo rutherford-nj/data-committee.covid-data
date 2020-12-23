@@ -27,7 +27,7 @@ docker run -v `pwd`:/work --entrypoint="/work/run.sh" rutherford-covid-image
 
 # Run svgo to optimize SVG images.
 echo "::group::Optimize SVGs"
-docker run -v `pwd`:/work --entrypoint="/work/data/svgo.sh" node:15.0.1-alpine3.12
+docker run -v `pwd`:/work --entrypoint="/work/data/svgo.sh" rutherford-covid-image
 echo "::endgroup::"
 
 # Ensure the files needed for rutherfordboronj.com are available, or exit.
