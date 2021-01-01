@@ -2,15 +2,11 @@
 
 # Run scraper.
 echo "::group::Fetch Data"
-docker run -v `pwd`:/work --entrypoint="/work/data/fetch.sh" rutherford-covid-image
+./data/fetch.sh
 echo "::endgroup::"
 
 # Ensure rutherford data is the CSV, not an error page.
 grep "Date,Total Cases,New Cases" data/csv/rutherford_data.csv || exit 0
-
-# Setup local git config.
-git config --global user.name github-actions
-git config --global user.email github-actions@github.com
 
 # Commit data changes. For scheduled runs, bail out of the workflow if there hasn't been a change in the data.
 timestamp=$(TZ=America/New_York date)
@@ -22,12 +18,12 @@ fi
 
 rm docs/*
 
-docker run -v `pwd`:/work --entrypoint="/work/run.sh" --env COVID_SMA_WIN=7 rutherford-covid-image
-docker run -v `pwd`:/work --entrypoint="/work/run.sh" rutherford-covid-image
+COVID_SMA_WIN=7 ./run.sh
+COVID_SMA_WIN=14 ./run.sh
 
 # Run svgo to optimize SVG images.
 echo "::group::Optimize SVGs"
-docker run -v `pwd`:/work --entrypoint="/work/data/svgo.sh" rutherford-covid-image
+./data/svgo.sh
 echo "::endgroup::"
 
 # Ensure the files needed for rutherfordboronj.com are available, or exit.

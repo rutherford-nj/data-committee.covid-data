@@ -1,7 +1,5 @@
 #!/bin/sh
 
-cd /work
-
 echo "Date,New Cases,Total Cases" > data/csv/covid_tracking_us.csv
 curl https://api.covidtracking.com/v1/us/daily.json | \
   jq -r '.[] | {d: .date|tostring, p: .positive, pi: .positiveIncrease} |
