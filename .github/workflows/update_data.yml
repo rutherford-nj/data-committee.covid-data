@@ -13,32 +13,24 @@ jobs:
   update_data_and_charts:
     runs-on: ubuntu-20.04
     steps:
-    - name: Setup git environment
-      run: |
-        git config --global user.name github-actions
-        git config --global user.email github-actions@github.com
-
-    - name: Checkout Codebase
-      uses: actions/checkout@v2
-
-    - name: Setup Python environment
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8.5'
-
-    - name: Setup Node.js environment
-      uses: actions/setup-node@v1
-      with:
-        node-version: '14.15.1'
+    - uses: actions/checkout@v2
     
-    - name: Install dependencies
-      run: apt update && apt install -y curl jq r-base
-
-    - name: Install Python requirements
-      run: pip install -r requirements.txt
-
-    - name: Install SVGO
-      run: npm install -g svgo
-
-    - name: Fetch data and update graphs
+    - id: cache-docker
+      uses: actions/cache@v2
+      with:
+        path: /tmp/docker-save
+        key: docker-save-${{ hashFiles('Dockerfile', 'requirements.txt') }}
+    
+    - name: Load docker layers from cache
+      run: docker load -i /tmp/docker-save/snapshot.tar || true
+      if: steps.cache-docker.outputs.cache-hit == 'true'
+    
+    - name: Build docker image
+      run: docker build . -t rutherford-covid-image --cache-from=rutherford-covid-image-cache
+    
+    - name: Tag image for caching
+      run: docker tag rutherford-covid-image rutherford-covid-image-cache && mkdir -p /tmp/docker-save && docker save rutherford-covid-image-cache -o /tmp/docker-save/snapshot.tar && ls -lh /tmp/docker-save || true
+      if: always() && steps.cache-docker.outputs.cache-hit != 'true'
+    
+    - name: Update data and charts
       run: ./.github/workflows/update_data.bash
