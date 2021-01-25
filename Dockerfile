@@ -1,4 +1,4 @@
-FROM python:3.8.7-slim-buster
+FROM python:3.8.7-buster
 
 # apt install needed packages
 RUN apt update && apt install -y curl jq r-base
