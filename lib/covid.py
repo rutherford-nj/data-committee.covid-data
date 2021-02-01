@@ -11,8 +11,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from .defaults import SmoothingParams, RegionNames, DataFileNames, DefaultPopulations, plot_defaults, PlotRegions
-from .utils import std_dev, sma, wow, ewma, incidence, smooth_slope
+import lib.defaults as defaults
+
+from lib.utils import std_dev, sma, wow, ewma, incidence, smooth_slope
 
 
 class Settings:
@@ -35,13 +36,19 @@ class Settings:
         self.settings = {} if settings is None else settings
 
         # Set default settings
-        self.settings['data_files'] = self.settings.get('data_files', DataFileNames)
+        self.settings['data_files'] = self.settings.get('data_files', defaults.DataFileNames)
         self.settings['data_dir'] = self.settings.get('data_dir', os.path.join(os.getcwd(), 'data', 'csv'))
-        self.settings['population'] = self.settings.get('population', DefaultPopulations)
-        self.settings['regions'] = self.settings.get('regions', RegionNames)
-        self.settings['sma_win'] = self.settings.get('sma_win', SmoothingParams['SMA_WIN'])
-        self.settings['ewma_spn'] = self.settings.get('ewma_spn', SmoothingParams['EWMA_SPAN'])
+        self.settings['population'] = self.settings.get('population', defaults.DefaultPopulations)
+        self.settings['regions'] = self.settings.get('regions', defaults.RegionNames)
+        self.settings['sma_win'] = self.settings.get('sma_win', defaults.SmoothingParams['SMA_WIN'])
+        self.settings['ewma_spn'] = self.settings.get('ewma_spn', defaults.SmoothingParams['EWMA_SPAN'])
+        self.settings['tail_days'] = self.settings.get('tail_days', defaults.LastNDays)
         self.settings['debug'] = self.settings.get('debug', False)
+
+    @property
+    def tail_days(self):
+        """Return data_files setting"""
+        return self.settings['tail_days']
 
     @property
     def data_files(self):
@@ -82,27 +89,31 @@ class Settings:
 class GetData:
     """
     Gets and massages town covid data
+
+    If initialized with ala_cart=True, you get to collect and modify the data yourself,
+    otherwise it's done for you the way that is best for default running
     """
 
-    def __init__(self, settings=None):
+    def __init__(self, settings=None, ala_cart=False):
 
         self.settings = Settings() if settings is None else settings
 
-        # Get data from sources
-        self.data_df_dict = self.get_data()
+        if not ala_cart:
+            # Get data from sources
+            self.data_df_dict = self.get_data()
 
-        # Pad data with zeros back to earliest date
-        self.pad_date()
+            # Pad data with zeros back to earliest date
+            self.pad_date()
 
-        regions = self.settings.regions
+            regions = self.settings.regions
 
-        # Get normalized cases (per 100K pop)
-        for key in regions:
-            region = regions[key]
-            self.data_df_dict[region] = self.per_capita(self.data_df_dict[region], region)
+            # Get normalized cases (per 100K pop)
+            for key in regions:
+                region = regions[key]
+                self.data_df_dict[region] = self.per_capita(self.data_df_dict[region], region)
 
     def get_data(self):
-        """ Grab data from the google sheet and pop into a pandas dataframe
+        """ Grab data from the csv files and pop into a pandas dataframe
 
         :return: df: dataframe of: Date, New Cases, Total Cases
         """
@@ -183,7 +194,7 @@ class MakePlots:
 
         self.covid_data = covid_data
 
-        plot_defaults()
+        defaults.plot_defaults()
 
         regions = covid_data.settings.regions
 
@@ -275,7 +286,7 @@ class MakePlots:
 
         # All New Cases Scaled by SMA
         def _plot_fn(ax):
-            regions = PlotRegions
+            regions = defaults.PlotRegions
 
             for region in regions:
                 _df = self.covid_df[region]
@@ -285,7 +296,7 @@ class MakePlots:
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_per_100K_' + str(self.sma_win) + 'd_SMA',
                        'title': 'New Cases / 100K residents -- ' + str(self.sma_win) + ' day average',
-                       'legend': PlotRegions
+                       'legend': defaults.PlotRegions
                        }
         self._make_plot(plot_config)
 
@@ -296,7 +307,7 @@ class MakePlots:
         """
 
         def _plot_fn(ax):
-            regions = PlotRegions
+            regions = defaults.PlotRegions
 
             for region in regions:
                 _df = self.covid_df[region]
@@ -306,7 +317,7 @@ class MakePlots:
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_per_100K_' + str(self.ewma_spn) + 'd_EWMA',
                        'title': 'New Cases / 100K residents -- ' + str(self.ewma_spn) + ' day weighted average',
-                       'legend': PlotRegions
+                       'legend': defaults.PlotRegions
                        }
         self._make_plot(plot_config)
 
@@ -317,7 +328,7 @@ class MakePlots:
         """
 
         def _plot_fn(ax):
-            regions = PlotRegions
+            regions = defaults.PlotRegions
 
             for region in regions:
                 _df = self.covid_df[region]
@@ -327,7 +338,7 @@ class MakePlots:
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'total_cases_per_100K',
                        'title': 'Total cases / 100K residents',
-                       'legend': PlotRegions
+                       'legend': defaults.PlotRegions
                        }
         self._make_plot(plot_config)
 
@@ -338,7 +349,7 @@ class MakePlots:
         """
 
         def _plot_fn(ax):
-            regions = PlotRegions
+            regions = defaults.PlotRegions
 
             for region in regions:
                 _df = self.covid_df[region]
@@ -348,7 +359,7 @@ class MakePlots:
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'total_cases_per_100K_' + str(self.sma_win) + 'd_SMA',
                        'title': 'Total cases / 100K residents -- ' + str(self.sma_win) + ' day average',
-                       'legend': PlotRegions
+                       'legend': defaults.PlotRegions
                        }
         self._make_plot(plot_config)
 
@@ -359,7 +370,7 @@ class MakePlots:
         """
 
         def _plot_fn(ax):
-            regions = PlotRegions
+            regions = defaults.PlotRegions
             y_col = 'New Cases / 100K'
             for region in regions:
                 _df = self.covid_df[region]
@@ -373,7 +384,7 @@ class MakePlots:
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_week-over-week_' + str(self.sma_win) + 'avg',
                        'title': 'New Cases Week-over-Week: ' + str(self.sma_win) + ' avg',
-                       'legend': PlotRegions
+                       'legend': defaults.PlotRegions
                        }
         self._make_plot(plot_config)
 
@@ -384,7 +395,7 @@ class MakePlots:
         """
 
         def _plot_fn(ax):
-            regions = PlotRegions
+            regions = defaults.PlotRegions
             y_col = 'New Cases / 100K'
             for region in regions:
                 _df = self.covid_df[region]
@@ -394,11 +405,10 @@ class MakePlots:
             ax.axhline(0, color='red', linestyle=':')
             return ax
 
-
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_per_100K_' + str(self.sma_win) + 'd_SMA_7d_slope',
                        'title': 'New Cases 7d avg slope of ' + str(self.sma_win) + ' avg/100K',
-                       'legend': PlotRegions
+                       'legend': defaults.PlotRegions
                        }
         self._make_plot(plot_config)
 
@@ -409,7 +419,7 @@ class MakePlots:
         """
 
         def _plot_fn(ax):
-            regions = PlotRegions
+            regions = defaults.PlotRegions
             y_col = 'New Cases / 100K'
             for region in regions:
                 _df = self.covid_df[region]
@@ -435,7 +445,7 @@ class MakePlots:
         """
 
         def _plot_fn(ax):
-            regions = PlotRegions
+            regions = defaults.PlotRegions
             y_col = 'New Cases / 100K'
             for region in regions:
                 _df = self.covid_df[region]
@@ -501,7 +511,7 @@ class MakeStats:
 
         self.covid_data = covid_data
 
-        plot_defaults()
+        defaults.plot_defaults()
 
         regions = covid_data.settings.regions
 
@@ -524,28 +534,24 @@ class MakeStats:
         """EWMA Span"""
         return self.covid_data.settings.ewma_spn
 
-    def calc_stat_type_here(self):
+    def rutherford_new_cases(self):
         """ Calculate something good. Just do something stupid for now
 
         :return: nothing, calcs stat
         """
 
         # New cases for Rutherford
-        def _stat_fn():
-            _df = self.covid_df['Rutherford']
+        recent_df = self.covid_df['Rutherford'].tail(self.covid_data.settings.tail_days)
 
-            _df['New Cases std'] = _df[str(self.sma_win) + 'd avg'].rolling(self.sma_win, min_periods=1).std()
+        recent_df['New Cases std'] = std_dev(recent_df['New Cases'], self.sma_win)
+        recent_df['New Cases sma'] = sma(recent_df['New Cases'], self.sma_win)
 
-            stat = _df['New Cases std'].iloc[-1]
+        cases_pos = recent_df['New Cases sma'] + recent_df['New Cases std']
+        cases_neg = recent_df['New Cases sma'] - recent_df['New Cases std']
 
-            return stat
+        stat = recent_df['New Cases std'].iloc[-1]
 
-        table_config = {'stat_fn': _stat_fn,
-                        'fname': 'sample_stat',
-                        'title': 'Rutherford New Covid Cases Current Standard Dev',
-                        'legend': ['Uncertainty']
-                        }
-        self._make_table(table_config)
+        return stat
 
     def _make_table(self, config=None):
         """ TODO: Print some tabular information of stats
