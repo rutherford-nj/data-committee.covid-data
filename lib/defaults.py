@@ -10,6 +10,9 @@ import os
 import seaborn as sns
 from cycler import cycler
 
+# For the stats tables, only save the last N dats
+LastNDays = 14
+
 # Set some default params for data smoothing
 SmoothingParams = {
     # Simple moving average window
