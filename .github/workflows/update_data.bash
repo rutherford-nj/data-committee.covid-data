@@ -20,8 +20,6 @@ else
   git commit -am "Latest data: ${timestamp}."
 fi
 
-rm docs/*
-
 docker run -v `pwd`:/work --entrypoint="/work/run.sh" --env COVID_SMA_WIN=7 rutherford-covid-image
 docker run -v `pwd`:/work --entrypoint="/work/run.sh" rutherford-covid-image
 
