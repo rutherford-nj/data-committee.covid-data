@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <title>Demo Splitter</title>
+  </head>
+  <body>
+    <input type="text" id="in">
+    <div id="out"></div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+      $(
+        $("#in").change(function(e) {
+          $("#out").empty();
+          let v = $(e.target).val().split(",");
+          for (let i=0; i<v.length; i++) {
+            let t=v[i].trim();
+            let tt=t[0];
+            tt+=',';
+            tt+=t.substring(1);
+            tt+=',';
+            let d=new Date();
+            tt+=d.getMonth()+1;
+            tt+='/';
+            tt+=d.getDate();
+            tt+='/';
+            tt+=d.getFullYear()-2000;
+            $("#out").append($("<div>" + tt + "</div>"))
+          }
+        })
+      )
+    </script>
+  </body>
+</html>
