@@ -25,8 +25,10 @@ echo "Date,County,State,FIPS,Total Cases,Total Deaths" > data/csv/nytimes_nj_cou
 curl https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv | \
   awk -F, '$3=="New Jersey"' >> data/csv/nytimes_nj_counties.csv
 
-curl https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv \
-  -L --output data/csv/nytimes_us_states.csv
+echo "Date,State,FIPS,Total Cases,Total Deaths" > data/csv/nytimes_us_states.csv
+curl https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv | \
+  awk -F, '$3=="New Jersey"' >> data/csv/nytimes_us_states.csv
 
-curl https://raw.githubusercontent.com/nytimes/covid-19-data/master/us.csv \
-  -L --output data/csv/nytimes_us.csv
+echo "Date,Total Cases,Total Deaths" > data/csv/nytimes_us.csv
+curl https://raw.githubusercontent.com/nytimes/covid-19-data/master/us.csv | \
+  sed '1d' >> data/csv/nytimes_us.csv
