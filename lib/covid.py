@@ -125,17 +125,9 @@ class GetData:
         data_df_dict = {}
         for key in data_files.keys():
             _df = pd.read_csv(os.path.join(data_dir, data_files[key]), parse_dates=[0])
-            if key == regions['Counties']:
-                _df['New Cases'] = _df.groupby('County').apply(lambda x: x['Total Cases'].diff()).reset_index(level=0,
-                                                                                                              drop=True)
+            if key != regions['Rutherford']:
+                _df['New Cases'] = _df['Total Cases'].diff().reset_index(level=0, drop=True)
                 _df.loc[_df['New Cases'].isna(), 'New Cases'] = _df['Total Cases']
-
-                # Break out Bergen County
-                data_df_dict[regions['Bergen']] = _df[_df.County == 'Bergen']
-
-                # NJ ex Bergen County
-                _df = _df[_df.County != 'Bergen'].groupby('Date').sum()
-                _df.reset_index(inplace=True)
 
             data_df_dict[key] = _df.sort_values('Date')
 

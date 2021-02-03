@@ -25,15 +25,14 @@ SmoothingParams = {
 RegionNames = {'US': 'United_States',
                'NJ': 'New_Jersey',
                'Bergen': 'Bergen_County',
-               'Counties': 'NJ_Counties',
                'Rutherford': 'Rutherford'}
 
 PlotRegions = ['US', 'NJ', 'Bergen', 'Rutherford']
 
 # The data we're importing default file names
-DataFileNames = {RegionNames['US']: 'covid_tracking_us.csv',
-                 RegionNames['NJ']: 'covid_tracking_nj.csv',
-                 RegionNames['Counties']: 'nytimes_nj_counties.csv',
+DataFileNames = {RegionNames['US']: 'nytimes_us.csv',
+                 RegionNames['NJ']: 'nytimes_nj.csv',
+                 RegionNames['Bergen']: 'nytimes_nj_bergen.csv',
                  RegionNames['Rutherford']: 'rutherford_data.csv'}
 
 # 2019 populations
@@ -41,9 +40,6 @@ DefaultPopulations = {RegionNames['US']: 328.2E6,
                       RegionNames['NJ']: 8.882E6,
                       RegionNames['Bergen']: 932202,
                       RegionNames['Rutherford']: 18303}
-DefaultPopulations[RegionNames['Counties']] = (DefaultPopulations[RegionNames['NJ']]
-                                               - DefaultPopulations[RegionNames['Bergen']])
-
 
 def plot_defaults():
     """ Set up ploting defaults """
