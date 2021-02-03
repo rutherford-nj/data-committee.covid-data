@@ -27,7 +27,7 @@ curl https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.
 
 echo "Date,State,FIPS,Total Cases,Total Deaths" > data/csv/nytimes_us_states.csv
 curl https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv | \
-  awk -F, '$3=="New Jersey"' >> data/csv/nytimes_us_states.csv
+  awk -F, '$2=="New Jersey"' >> data/csv/nytimes_us_states.csv
 
 echo "Date,Total Cases,Total Deaths" > data/csv/nytimes_us.csv
 curl https://raw.githubusercontent.com/nytimes/covid-19-data/master/us.csv | \
