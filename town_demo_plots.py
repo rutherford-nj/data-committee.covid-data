@@ -3,6 +3,8 @@ Library to get covid demographic data for the 07070 and display pretty plots and
 
 This should be folded into the main lib workflow as an option, eventually
 
+THIS CAN ONLY BE RUN FROM MY LAPTOP SINCE THE DATA IS IN KEYBASE
+
 Greg Recine <greg@gregrecine.com> Jan 28 2021
 """
 import os
@@ -39,8 +41,8 @@ def pie_chart(sizes, labels, colors, title=None):
             textprops={'fontsize': 14})
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
     plt.title(title, fontsize=14)
-    plt.savefig(title + ".svg", format="svg")
-    # plt.show()
+    plt.savefig(title + ".svg", format="svg", dpi=400)
+    plt.show()
 
 def gender_count(df):
     return df.groupby('Gender')['Date'].count()
@@ -76,7 +78,7 @@ def hist_chart(df, age_bins, labels, title):
                  horizontalalignment="center")
 
     plt.savefig(title + ".svg", format="svg", dpi=400)
-    # plt.show()
+    plt.show()
 
 # =========================
 
