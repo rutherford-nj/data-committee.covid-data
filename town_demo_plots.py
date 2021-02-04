@@ -41,7 +41,8 @@ def pie_chart(sizes, labels, colors, title=None):
             textprops={'fontsize': 14})
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
     plt.title(title, fontsize=14)
-    plt.savefig(title.replace(" ", "_") + ".svg", format="svg", dpi=400)
+    fname = title.replace(" - ","_").replace(" ", "_")
+    plt.savefig(fname + ".svg", format="svg", dpi=400)
     plt.show()
 
 def gender_count(df):
@@ -77,7 +78,8 @@ def hist_chart(df, age_bins, labels, title):
         plt.gca().text(x_pos[i], v[0] + 4.0, '{p:.1f}%\n{n:d}'.format(p=v[1], n=v[0]), color='black',
                  horizontalalignment="center")
 
-    plt.savefig(title.replace(" ", "_") + ".svg", format="svg", dpi=400)
+    fname = title.replace(" - ","_").replace(" ", "_")
+    plt.savefig(fname  + ".svg", format="svg", dpi=400)
     plt.show()
 
 # =========================
