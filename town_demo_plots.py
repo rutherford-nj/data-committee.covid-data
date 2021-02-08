@@ -8,31 +8,21 @@ THIS CAN ONLY BE RUN FROM MY LAPTOP SINCE THE DATA IS IN KEYBASE
 Greg Recine <greg@gregrecine.com> Jan 28 2021
 """
 import os
-import matplotlib.dates as mdates
+
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-import lib.defaults as defaults
 
-def get_case_data():
-    KEYBASE_ROOT = os.path.join('/','Volumes')
-    demo_dir = os.path.join(KEYBASE_ROOT,'Keybase','team','rutherford_nj.data_committee','covid_demographics/')
-    demo_fname = '2020.csv'
+KEYBASE_ROOT = os.path.join('/', 'Volumes')
+DEMO_DIR = os.path.join(KEYBASE_ROOT, 'Keybase', 'team', 'rutherford_nj.data_committee', 'covid_demographics/')
+CASES_FILE = '2020.csv'
+DEATHS_FILE = '2020-deaths.csv'
 
-    _df = pd.read_csv(os.path.join(demo_dir,demo_fname), parse_dates=['Date'])
+
+def get_data(demo_fname):
+
+    _df = pd.read_csv(os.path.join(DEMO_DIR, demo_fname), parse_dates=['Date'])
     _df.dropna(inplace=True)
-    _df.loc[_df['Age']<0,'Age'] = None
-
-    return _df
-
-def get_death_data():
-    KEYBASE_ROOT = os.path.join('/','Volumes')
-    demo_dir = os.path.join(KEYBASE_ROOT,'Keybase','team','rutherford_nj.data_committee','covid_demographics/')
-    demo_fname = '2020-deaths.csv'
-
-    _df = pd.read_csv(os.path.join(demo_dir,demo_fname), parse_dates=['Date'])
-    _df.dropna(inplace=True)
-    _df.loc[_df['Age']<0,'Age'] = None
+    _df.loc[_df['Age'] < 0, 'Age'] = None
 
     return _df
 
@@ -41,9 +31,11 @@ def get_death_data():
 def make_autopct(sizes):
     def my_autopct(pct):
         total = sum(sizes)
-        val = int(round(pct*total/100.0))
-        return '{p:.1f}%\n{v:d}'.format(p=pct,v=val)
+        val = int(round(pct * total / 100.0))
+        return '{p:.1f}%\n{v:d}'.format(p=pct, v=val)
+
     return my_autopct
+
 
 # DAMN PIE CHARTS
 def pie_chart(sizes, labels, colors, title=None):
@@ -53,20 +45,22 @@ def pie_chart(sizes, labels, colors, title=None):
             textprops={'fontsize': 14})
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
     plt.title(title, fontsize=14)
-    fname = title.replace(" - ","_").replace(" ", "_")
+    fname = title.replace(" - ", "_").replace(" ", "_")
     plt.savefig(fname + ".svg", format="svg", dpi=400)
     plt.show()
+
 
 def gender_count(df):
     return df.groupby('Gender')['Date'].count()
 
-def bake_pies(pies):
-    for title in pies:
-        gender_breakdown = gender_count(pies[title])
+
+def bake_pies(_pies):
+    for title in _pies:
+        gender_breakdown = gender_count(_pies[title])
         if len(gender_breakdown) > 0:
-            if '?' in gender_count(pies[title]):
+            if '?' in gender_count(_pies[title]):
                 sizes = [gender_breakdown.M, gender_breakdown.F, gender_breakdown['?']]
-                labels = ['Male', 'Female','Unknown']
+                labels = ['Male', 'Female', 'Unknown']
                 colors = ['LightBlue', 'Orange', 'LightGreen']
             else:
                 sizes = [gender_breakdown.M, gender_breakdown.F]
@@ -77,7 +71,8 @@ def bake_pies(pies):
                       colors=colors,
                       title=title)
 
-def hist_chart(df, age_bins, labels, title, offset=4.0):
+
+def hist_chart(df, age_bins, labels, title, offset):
     hist_df = pd.DataFrame()
     hist_df['vals'] = df.Age.value_counts(bins=age_bins, sort=False)
     hist_df['pct'] = 100.0 * df.Age.value_counts(bins=age_bins, sort=False, normalize=True)
@@ -98,63 +93,69 @@ def hist_chart(df, age_bins, labels, title, offset=4.0):
 
     for i, v in enumerate(list(zip(hist_df.vals, hist_df.pct))):
         plt.gca().text(x_pos[i], v[0] + offset, '{p:.1f}%\n{n:d}'.format(p=v[1], n=v[0]), color='black',
-                 horizontalalignment="center")
+                       horizontalalignment="center")
 
-    fname = title.replace(" - ","_").replace(" ", "_")
-    plt.savefig(fname  + ".svg", format="svg", dpi=400)
+    fname = title.replace(" - ", "_").replace(" ", "_")
+    plt.savefig(fname + ".svg", format="svg", dpi=400)
     plt.show()
+
+
+def cook_bars(_bars, offset=4.0):
+    age_bins = [0, 4, 17, 29, 49, 64, 79, 200]
+    labels = ['0-4', '5-17', '18-29', '30-49', '50-64', '65-79', '80+']
+    for bar in _bars:
+        hist_chart(df=_bars[bar],
+                   age_bins=age_bins,
+                   labels=labels,
+                   title=bar,
+                   offset=offset)
+
 
 # Hardwired
 os.chdir('docs/demographics')
 
-# ========================= CASE PLOTS
+# ========================= GET DATA
 
 # Get Case Data
-demo_df = get_case_data()
+demo_case_df = get_data(CASES_FILE)
 # Break up into 18 and under, and over 18
-demo_df_minors = demo_df[demo_df.Age < 19]
-demo_df_adults = demo_df[demo_df.Age >= 19]
+demo_case_df_minors = demo_case_df[demo_case_df.Age < 19]
+demo_case_df_adults = demo_case_df[demo_case_df.Age >= 19]
+
+# Get Death Data
+demo_death_df = get_data(DEATHS_FILE)
+# Break up into 18 and under, and over 18
+demo_death_df_minors = demo_death_df[demo_death_df.Age < 19]
+demo_death_df_adults = demo_death_df[demo_death_df.Age >= 19]
+
+# ========================= CASE PLOTS
 
 # Gender pie charts
-pies = {"2020 COVID Cases by Gender": demo_df,
-        "2020 COVID Cases by Gender - 18 and Younger": demo_df_minors,
-        "2020 COVID Cases by Gender - Over 18": demo_df_adults}
+pies = {"2020 COVID Cases by Gender": demo_case_df,
+        "2020 COVID Cases by Gender - 18 and Younger": demo_case_df_minors,
+        "2020 COVID Cases by Gender - Over 18": demo_case_df_adults}
 bake_pies(pies)
 
 # Histogram with NJ age bins
-bars = {"2020 COVID Cases by Age Group": demo_df,
-        "2020 COVID Cases by Age Group - Males": demo_df[demo_df.Gender=='M'],
-        "2020 COVID Cases by Age Group - Females": demo_df[demo_df.Gender=='F']}
-for bar in bars:
-    hist_chart(df=bars[bar],
-               age_bins=[0, 4, 17, 29, 49, 64, 79, 200],
-               labels=['0-4', '5-17', '18-29', '30-49', '50-64', '65-79', '80+'],
-               title=bar)
+bars = {"2020 COVID Cases by Age Group": demo_case_df,
+        "2020 COVID Cases by Age Group - Males": demo_case_df[demo_case_df.Gender == 'M'],
+        "2020 COVID Cases by Age Group - Females": demo_case_df[demo_case_df.Gender == 'F']}
+cook_bars(bars)
+
 
 # ========================= DEATH PLOTS
 
-# Get Case Data
-demo_df = get_death_data()
-# Break up into 18 and under, and over 18
-demo_df_minors = demo_df[demo_df.Age < 19]
-demo_df_adults = demo_df[demo_df.Age >= 19]
-
 # Gender pie charts
-pies = {"2020 COVID Deaths by Gender": demo_df,
-        "2020 COVID Deaths by Gender - 18 and Younger": demo_df_minors,
-        "2020 COVID Deaths by Gender - Over 18": demo_df_adults}
+pies = {"2020 COVID Deaths by Gender": demo_death_df,
+        "2020 COVID Deaths by Gender - 18 and Younger": demo_death_df_minors,
+        "2020 COVID Deaths by Gender - Over 18": demo_death_df_adults}
 bake_pies(pies)
 
 # Histogram with NJ age bins
-bars = {"2020 COVID Deaths by Age Group": demo_df,
-        "2020 COVID Deaths by Age Group - Males": demo_df[demo_df.Gender=='M'],
-        "2020 COVID Deaths by Age Group - Females": demo_df[demo_df.Gender=='F']}
-for bar in bars:
-    hist_chart(df=bars[bar],
-               age_bins=[0, 4, 17, 29, 49, 64, 79, 200],
-               labels=['0-4', '5-17', '18-29', '30-49', '50-64', '65-79', '80+'],
-               title=bar,
-               offset=0.2)
+bars = {"2020 COVID Deaths by Age Group": demo_death_df,
+        "2020 COVID Deaths by Age Group - Males": demo_death_df[demo_death_df.Gender == 'M'],
+        "2020 COVID Deaths by Age Group - Females": demo_death_df[demo_death_df.Gender == 'F']}
+cook_bars(bars, 0.2)
 
 # #############################
 # fig = plt.figure(figsize=(13, 9))
@@ -193,4 +194,3 @@ for bar in bars:
 # # all_std = demo_df.std()
 # # minor_std = demo_df.std()
 # # adult_std = demo_df.std()
-
