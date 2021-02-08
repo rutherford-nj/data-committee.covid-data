@@ -36,8 +36,8 @@ def make_autopct(sizes):
 # DAMN PIE CHARTS
 def pie_chart(sizes, labels, colors, title=None):
     fig1, ax1 = plt.subplots()
-    ax1.pie(sizes, colors=colors, labels=labels, autopct=make_autopct(sizes), startangle=90,
-            wedgeprops = {"edgecolor":"k", 'linewidth': 3},
+    ax1.pie(sizes, colors=colors, labels=labels, autopct=make_autopct(sizes), startangle=45,
+            # wedgeprops = {"edgecolor":"k", 'linewidth': 1},
             textprops={'fontsize': 14})
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
     plt.title(title, fontsize=14)
@@ -50,9 +50,9 @@ def gender_count(df):
 
 def bake_pies(pies):
     for title in pies:
-        pie_chart(sizes=[gender_count(pies[title]).M, gender_count(pies[title]).F],
-                  labels=['Male', 'Female'],
-                  colors=['LightBlue','Orange'],
+        pie_chart(sizes=[gender_count(pies[title]).M, gender_count(pies[title]).F, gender_count(pies[title])['?']],
+                  labels=['Male', 'Female','Unknown'],
+                  colors=['LightBlue','Orange','LightGreen'],
                   title=title)
 
 def hist_chart(df, age_bins, labels, title):
@@ -109,12 +109,42 @@ for bar in bars:
                labels=['0-4', '5-17', '18-29', '30-49', '50-64', '65-79', '80+'],
                title=bar)
 
+
+# #############################
+# fig = plt.figure(figsize=(13, 9))
+# ax = fig.add_subplot(1, 1, 1)
 #
-# all_mean = demo_df.mean()
-# minor_mean = demo_df.mean()
-# adult_mean = demo_df.mean()
+# # age_config = {'minors': {'data': demo_df_minors, 'legend': '18 and under', 'plt_opts': }}
 #
-# all_std = demo_df.std()
-# minor_std = demo_df.std()
-# adult_std = demo_df.std()
+# for df in [demo_df_minors,demo_df_adults]:
+#     _df = pd.DataFrame()
+#     rng = pd.date_range('2020-01-01', '2020-12-31', freq='D')
+#     _df = pd.DataFrame(index=rng)
+#
+#     _df['New Cases'] = df.groupby('Date').Age.count()
+#     _df = _df.fillna(0)
+#
+#     _df['sma'] = _df['New Cases'].rolling(14, min_periods=0).mean()
+#     ax.plot(_df.index, _df['sma'])
+#     ax.stem(_df.index, _df['New Cases'], linefmt='x:', markerfmt=' ', basefmt=' ')
+#
+# ax.set_ylabel('# of cases', fontsize=20)
+# my_fmt = mdates.DateFormatter('%b')
+# ax.xaxis.set_major_formatter(my_fmt)
+# plt.xticks(fontsize=16)
+# plt.yticks(fontsize=16)
+# 
+# plt.title('Cases by age over 2020', fontsize=24)
+# plt.legend(['minors','adults','minors','adults'], fontsize=16)
+# plt.grid()
+#
+# plt.show()
+# #
+# # all_mean = demo_df.mean()
+# # minor_mean = demo_df.mean()
+# # adult_mean = demo_df.mean()
+# #
+# # all_std = demo_df.std()
+# # minor_std = demo_df.std()
+# # adult_std = demo_df.std()
 
