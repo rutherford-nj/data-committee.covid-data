@@ -77,7 +77,7 @@ def bake_pies(pies):
                       colors=colors,
                       title=title)
 
-def hist_chart(df, age_bins, labels, title):
+def hist_chart(df, age_bins, labels, title, offset=4.0):
     hist_df = pd.DataFrame()
     hist_df['vals'] = df.Age.value_counts(bins=age_bins, sort=False)
     hist_df['pct'] = 100.0 * df.Age.value_counts(bins=age_bins, sort=False, normalize=True)
@@ -97,7 +97,7 @@ def hist_chart(df, age_bins, labels, title):
     plt.tick_params(axis='x', which='both', bottom=False, top=False)
 
     for i, v in enumerate(list(zip(hist_df.vals, hist_df.pct))):
-        plt.gca().text(x_pos[i], v[0] + 0.1, '{p:.1f}%\n{n:d}'.format(p=v[1], n=v[0]), color='black',
+        plt.gca().text(x_pos[i], v[0] + offset, '{p:.1f}%\n{n:d}'.format(p=v[1], n=v[0]), color='black',
                  horizontalalignment="center")
 
     fname = title.replace(" - ","_").replace(" ", "_")
@@ -107,29 +107,29 @@ def hist_chart(df, age_bins, labels, title):
 # Hardwired
 os.chdir('docs/demographics')
 
-# # ========================= CASE PLOTS
-#
-# # Get Case Data
-# demo_df = get_case_data()
-# # Break up into 18 and under, and over 18
-# demo_df_minors = demo_df[demo_df.Age < 19]
-# demo_df_adults = demo_df[demo_df.Age >= 19]
-#
-# # Gender pie charts
-# pies = {"2020 COVID Cases by Gender": demo_df,
-#         "2020 COVID Cases by Gender - 18 and Younger": demo_df_minors,
-#         "2020 COVID Cases by Gender - Over 18": demo_df_adults}
-# bake_pies(pies)
-#
-# # Histogram with NJ age bins
-# bars = {"2020 COVID Cases by Age Group": demo_df,
-#         "2020 COVID Cases by Age Group - Males": demo_df[demo_df.Gender=='M'],
-#         "2020 COVID Cases by Age Group - Females": demo_df[demo_df.Gender=='F']}
-# for bar in bars:
-#     hist_chart(df=bars[bar],
-#                age_bins=[0, 4, 17, 29, 49, 64, 79, 200],
-#                labels=['0-4', '5-17', '18-29', '30-49', '50-64', '65-79', '80+'],
-#                title=bar)
+# ========================= CASE PLOTS
+
+# Get Case Data
+demo_df = get_case_data()
+# Break up into 18 and under, and over 18
+demo_df_minors = demo_df[demo_df.Age < 19]
+demo_df_adults = demo_df[demo_df.Age >= 19]
+
+# Gender pie charts
+pies = {"2020 COVID Cases by Gender": demo_df,
+        "2020 COVID Cases by Gender - 18 and Younger": demo_df_minors,
+        "2020 COVID Cases by Gender - Over 18": demo_df_adults}
+bake_pies(pies)
+
+# Histogram with NJ age bins
+bars = {"2020 COVID Cases by Age Group": demo_df,
+        "2020 COVID Cases by Age Group - Males": demo_df[demo_df.Gender=='M'],
+        "2020 COVID Cases by Age Group - Females": demo_df[demo_df.Gender=='F']}
+for bar in bars:
+    hist_chart(df=bars[bar],
+               age_bins=[0, 4, 17, 29, 49, 64, 79, 200],
+               labels=['0-4', '5-17', '18-29', '30-49', '50-64', '65-79', '80+'],
+               title=bar)
 
 # ========================= DEATH PLOTS
 
@@ -143,7 +143,7 @@ demo_df_adults = demo_df[demo_df.Age >= 19]
 pies = {"2020 COVID Deaths by Gender": demo_df,
         "2020 COVID Deaths by Gender - 18 and Younger": demo_df_minors,
         "2020 COVID Deaths by Gender - Over 18": demo_df_adults}
-# bake_pies(pies)
+bake_pies(pies)
 
 # Histogram with NJ age bins
 bars = {"2020 COVID Deaths by Age Group": demo_df,
@@ -153,7 +153,8 @@ for bar in bars:
     hist_chart(df=bars[bar],
                age_bins=[0, 4, 17, 29, 49, 64, 79, 200],
                labels=['0-4', '5-17', '18-29', '30-49', '50-64', '65-79', '80+'],
-               title=bar)
+               title=bar,
+               offset=0.2)
 
 # #############################
 # fig = plt.figure(figsize=(13, 9))

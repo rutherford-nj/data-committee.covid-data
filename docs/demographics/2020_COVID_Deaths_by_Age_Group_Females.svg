@@ -7,7 +7,7 @@
   <rdf:RDF xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2021-02-08T14:01:34.708640</dc:date>
+    <dc:date>2021-02-08T14:06:31.733207</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -449,7 +449,7 @@ z
    <g id="matplotlib.axis_2"/>
    <g id="text_8">
     <!-- 0.0% -->
-    <g transform="translate(80.22771 293.570187)scale(0.1 -0.1)">
+    <g transform="translate(80.22771 290.754188)scale(0.1 -0.1)">
      <defs>
       <path d="M 10.6875 12.40625 
 L 21 12.40625 
@@ -510,78 +510,78 @@ z
      <use x="159.033203" xlink:href="#DejaVuSans-37"/>
     </g>
     <!-- 0 -->
-    <g transform="translate(89.748803 304.768)scale(0.1 -0.1)">
+    <g transform="translate(89.748803 301.952)scale(0.1 -0.1)">
      <use xlink:href="#DejaVuSans-48"/>
     </g>
    </g>
    <g id="text_9">
     <!-- 0.0% -->
-    <g transform="translate(127.971025 293.570187)scale(0.1 -0.1)">
+    <g transform="translate(127.971025 290.754188)scale(0.1 -0.1)">
      <use xlink:href="#DejaVuSans-48"/>
      <use x="63.623047" xlink:href="#DejaVuSans-46"/>
      <use x="95.410156" xlink:href="#DejaVuSans-48"/>
      <use x="159.033203" xlink:href="#DejaVuSans-37"/>
     </g>
     <!-- 0 -->
-    <g transform="translate(137.492119 304.768)scale(0.1 -0.1)">
+    <g transform="translate(137.492119 301.952)scale(0.1 -0.1)">
      <use xlink:href="#DejaVuSans-48"/>
     </g>
    </g>
    <g id="text_10">
     <!-- 0.0% -->
-    <g transform="translate(175.714341 293.570187)scale(0.1 -0.1)">
+    <g transform="translate(175.714341 290.754188)scale(0.1 -0.1)">
      <use xlink:href="#DejaVuSans-48"/>
      <use x="63.623047" xlink:href="#DejaVuSans-46"/>
      <use x="95.410156" xlink:href="#DejaVuSans-48"/>
      <use x="159.033203" xlink:href="#DejaVuSans-37"/>
     </g>
     <!-- 0 -->
-    <g transform="translate(185.235434 304.768)scale(0.1 -0.1)">
+    <g transform="translate(185.235434 301.952)scale(0.1 -0.1)">
      <use xlink:href="#DejaVuSans-48"/>
     </g>
    </g>
    <g id="text_11">
     <!-- 0.0% -->
-    <g transform="translate(223.457656 293.570187)scale(0.1 -0.1)">
+    <g transform="translate(223.457656 290.754188)scale(0.1 -0.1)">
      <use xlink:href="#DejaVuSans-48"/>
      <use x="63.623047" xlink:href="#DejaVuSans-46"/>
      <use x="95.410156" xlink:href="#DejaVuSans-48"/>
      <use x="159.033203" xlink:href="#DejaVuSans-37"/>
     </g>
     <!-- 0 -->
-    <g transform="translate(232.97875 304.768)scale(0.1 -0.1)">
+    <g transform="translate(232.97875 301.952)scale(0.1 -0.1)">
      <use xlink:href="#DejaVuSans-48"/>
     </g>
    </g>
    <g id="text_12">
     <!-- 0.0% -->
-    <g transform="translate(271.200972 293.570187)scale(0.1 -0.1)">
+    <g transform="translate(271.200972 290.754188)scale(0.1 -0.1)">
      <use xlink:href="#DejaVuSans-48"/>
      <use x="63.623047" xlink:href="#DejaVuSans-46"/>
      <use x="95.410156" xlink:href="#DejaVuSans-48"/>
      <use x="159.033203" xlink:href="#DejaVuSans-37"/>
     </g>
     <!-- 0 -->
-    <g transform="translate(280.722066 304.768)scale(0.1 -0.1)">
+    <g transform="translate(280.722066 301.952)scale(0.1 -0.1)">
      <use xlink:href="#DejaVuSans-48"/>
     </g>
    </g>
    <g id="text_13">
     <!-- 0.0% -->
-    <g transform="translate(318.944287 293.570187)scale(0.1 -0.1)">
+    <g transform="translate(318.944287 290.754188)scale(0.1 -0.1)">
      <use xlink:href="#DejaVuSans-48"/>
      <use x="63.623047" xlink:href="#DejaVuSans-46"/>
      <use x="95.410156" xlink:href="#DejaVuSans-48"/>
      <use x="159.033203" xlink:href="#DejaVuSans-37"/>
     </g>
     <!-- 0 -->
-    <g transform="translate(328.465381 304.768)scale(0.1 -0.1)">
+    <g transform="translate(328.465381 301.952)scale(0.1 -0.1)">
      <use xlink:href="#DejaVuSans-48"/>
     </g>
    </g>
    <g id="text_14">
     <!-- 100.0% -->
-    <g transform="translate(360.325103 40.130188)scale(0.1 -0.1)">
+    <g transform="translate(360.325103 37.314188)scale(0.1 -0.1)">
      <use xlink:href="#DejaVuSans-49"/>
      <use x="63.623047" xlink:href="#DejaVuSans-48"/>
      <use x="127.246094" xlink:href="#DejaVuSans-48"/>
@@ -590,7 +590,7 @@ z
      <use x="286.279297" xlink:href="#DejaVuSans-37"/>
     </g>
     <!-- 9 -->
-    <g transform="translate(376.208697 51.328)scale(0.1 -0.1)">
+    <g transform="translate(376.208697 48.512)scale(0.1 -0.1)">
      <use xlink:href="#DejaVuSans-57"/>
     </g>
    </g>
