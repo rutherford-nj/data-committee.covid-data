@@ -85,4 +85,4 @@ def smooth_slope(cases_df, y_col, inc_win, sma_win, spar=0.5):
     spline = np.array(robjects.r['predict'](spline_xy, robjects.FloatVector(x_val)).rx2('y'))
     slope = np.gradient(spline)
 
-    return x_dates, slope
+    return x_dates, slope, spline

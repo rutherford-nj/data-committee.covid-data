@@ -240,6 +240,52 @@ class MakePlots:
                        }
         self._make_plot(plot_config)
 
+    def rutherford_new_cases_reg(self):
+        """ Plot Rutherford local case numbers and -/+ 1 std with regularized fitted curve
+
+        :return: nothing, creates plot
+        """
+
+        # New cases for Rutherford
+        def _plot_fn(ax):
+            _df = self.covid_df['Rutherford']
+
+            _df['New Cases std'] = std_dev(_df['New Cases'], self.sma_win)
+            _df['New Cases sma'] = sma(_df['New Cases'], self.sma_win)
+
+            y_col = 'New Cases'
+            _x_dates, _slope, spline = smooth_slope(_df, y_col, inc_win=self.sma_win, sma_win=3, spar=0.5)
+            spline = np.pad(spline, (len(_df) - len(spline), 0), 'constant', constant_values=0)
+            _df['New Cases fitted'] = spline/self.sma_win
+
+            cases_pos = _df['New Cases sma'] + _df['New Cases std']
+            cases_neg = _df['New Cases sma'] - _df['New Cases std']
+
+            ax.fill_between(_df['Date'], cases_neg, cases_pos, alpha=0.2, facecolor='#089FFF')
+            ax.plot(_df['Date'], _df['New Cases fitted'])
+            ax.plot(_df['Date'], _df['New Cases'], 'bo', mfc='none')
+
+            return ax
+
+        plot_config = {'plot_fn': _plot_fn,
+                       'fname': 'new_cases_Rutherford_fitted_'+str(self.sma_win)+'d',
+                       'title': 'Rutherford New Covid Cases',
+                       'legend': [str(self.sma_win) + 'd avg fitted',
+                                  'Daily Cases',
+                                  'Uncertainty']
+                       }
+        self._make_plot(plot_config)
+
+
+
+
+        plot_config = {'plot_fn': _plot_fn,
+                       'fname': 'new_cases_per_100K_3d_trajectory',
+                       'title': 'New Cases/100K 3 Day trajectory',
+                       'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
+                       }
+        self._make_plot(plot_config)
+
     def rutherford_total_cases(self):
         """ Plot Rutherford local total case numbers and -/+ 1 std
 
@@ -441,7 +487,7 @@ class MakePlots:
             y_col = 'New Cases / 100K'
             for region in regions:
                 _df = self.covid_df[region]
-                x_dates, slope = smooth_slope(_df, y_col, inc_win=14, sma_win=3, spar=0.5)
+                x_dates, slope, _ = smooth_slope(_df, y_col, inc_win=14, sma_win=3, spar=0.5)
                 ax.plot(x_dates, slope)
             ax.axhline(0, color='red', linestyle=':')
             return ax

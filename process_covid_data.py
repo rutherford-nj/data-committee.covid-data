@@ -15,6 +15,7 @@ MakeThesePlots = [
     # covid.MakePlots.total_cases_norm,          # Total New Cases Scaled
     covid.MakePlots.total_cases_norm_sma,      # Total New Cases Scaled by SMA
     covid.MakePlots.rutherford_new_cases,      # Rutherford new cases, unscaled
+    covid.MakePlots.rutherford_new_cases_reg,      # Rutherford new cases, unscaled & fitted
     covid.MakePlots.rutherford_total_cases,    # Rutherford total cases, unscaled
     covid.MakePlots.new_cases_norm_sma_wow,    # Rutherford new week-over-week cases, unscaled
     covid.MakePlots.new_cases_norm_sma_slope,  # Rutherford X day slope of scaled, SMA new cases
