@@ -586,7 +586,7 @@ class MakeStats:
 
         # Print all Rutherford data to a html file
         html_cols = ['Date', 'Total Cases', 'New Cases', sma_col]
-        file_name = 'Rutherford_Cases_'+str(self.sma_win)+'d_SMA.html'
+        file_name = 'cases_Rutherford'+str(self.sma_win)+'d_SMA.html'
         recent_df.sort_values('Date', ascending=False).to_html(file_name, columns=html_cols,
                                                                index=False, float_format='%0.2f')
 
