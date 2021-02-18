@@ -16,17 +16,18 @@ def std_dev(series, win, min_periods=1):
     :param min_periods: min periods to use (from start)
     :return: pandas series
     """
-    return series.rolling(win).mean().rolling(win, min_periods=min_periods).std()
+    return series.rolling(win, min_periods=min_periods).mean().rolling(win, min_periods=min_periods).std()
 
 
-def sma(series, win):
+def sma(series, win, min_periods=1):
     """ Return rolling simple moving average
 
     :param series: pandas series
     :param win: rolling window
+    :param min_periods: min periods for the ends of the windows
     :return: pandas series
     """
-    return series.rolling(win).mean()
+    return series.rolling(win, min_periods=min_periods).mean()
 
 
 def ewma(series, spn):
@@ -67,6 +68,9 @@ def smooth_slope(cases_df, y_col, inc_win, sma_win, spar=0.5):
 
     :param cases_df:
     :param y_col:
+    :param inc_win: incidence window in days
+    :param sma_win: sma window in days
+    :param spar: smoothing parameter
     :return:
     """
     _df = cases_df.reset_index(drop=True)
