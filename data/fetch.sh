@@ -2,9 +2,6 @@
 
 cd /work
 
-curl https://docs.google.com/spreadsheets/d/e/2PACX-1vS00GBGJKB0Xwtru3Rn5WrPqur19j--CibdM5R1tbnis0W_Bp18EmLFkJJc5sG4dwvMyqCorSVhHwik/pub?output=csv \
-  -L --output data/csv/rutherford_data.csv
-
 #############################
 ## Get data from NY Times
 
