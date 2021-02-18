@@ -24,7 +24,7 @@ MakeThesePlots = [
 ]
 
 CalcTheseStats = [
-    covid.MakeStats.rutherford_new_cases,      # Some stat type goes here
+    covid.MakeStats.rutherford_cases,      # Some stat type goes here
 ]
 
 
@@ -50,13 +50,13 @@ def main():
         plot_type = plot.__name__
         getattr(plot_data, plot_type)()
 
-    # # Set up stats and run if set
-    # stats_data = covid.MakeStats(covid_data)
-    #
-    # # Calc the stats we want
-    # for calc in CalcTheseStats:
-    #     calc_type = calc.__name__
-    #     getattr(stats_data, calc_type)()
+    # Set up stats and run if set
+    stats_data = covid.MakeStats(covid_data)
+
+    # Calc the stats we want
+    for calc in CalcTheseStats:
+        calc_type = calc.__name__
+        getattr(stats_data, calc_type)()
 
 
 

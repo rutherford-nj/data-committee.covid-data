@@ -256,7 +256,7 @@ class MakePlots:
             y_col = 'New Cases'
             _x_dates, _slope, spline = smooth_slope(_df, y_col, inc_win=self.sma_win, sma_win=3, spar=0.5)
             spline = np.pad(spline, (len(_df) - len(spline), 0), 'constant', constant_values=0)
-            _df['New Cases fitted'] = spline/self.sma_win
+            _df['New Cases fitted'] = spline / self.sma_win
 
             cases_pos = _df['New Cases sma'] + _df['New Cases std']
             cases_neg = _df['New Cases sma'] - _df['New Cases std']
@@ -268,16 +268,13 @@ class MakePlots:
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
-                       'fname': 'new_cases_Rutherford_fitted_'+str(self.sma_win)+'d',
+                       'fname': 'new_cases_Rutherford_fitted_' + str(self.sma_win) + 'd',
                        'title': 'Rutherford New Covid Cases',
                        'legend': [str(self.sma_win) + 'd avg fitted',
                                   'Daily Cases',
                                   'Uncertainty']
                        }
         self._make_plot(plot_config)
-
-
-
 
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_per_100K_3d_trajectory',
@@ -572,22 +569,31 @@ class MakeStats:
         """EWMA Span"""
         return self.covid_data.settings.ewma_spn
 
-    def rutherford_new_cases(self):
+    def rutherford_cases(self):
         """ Calculate something good. Just do something stupid for now
 
         :return: nothing, calcs stat
         """
 
         # New cases for Rutherford
-        recent_df = self.covid_df['Rutherford'].tail(self.covid_data.settings.tail_days)
+        recent_df = self.covid_df['Rutherford']
 
-        recent_df['New Cases std'] = std_dev(recent_df['New Cases'], self.sma_win)
-        recent_df['New Cases sma'] = sma(recent_df['New Cases'], self.sma_win)
+        sma_col = 'New Cases '+str(self.sma_win)+'d avg'
+        std_col = sma_col+' std'
 
-        cases_pos = recent_df['New Cases sma'] + recent_df['New Cases std']
-        cases_neg = recent_df['New Cases sma'] - recent_df['New Cases std']
+        recent_df[sma_col] = sma(recent_df['New Cases'], self.sma_win)
+        recent_df[std_col] = std_dev(recent_df[sma_col], self.sma_win)
 
+        # Print to a html file
+        html_cols = ['Date', 'Total Cases', 'New Cases', sma_col]
+        file_name = 'Rutherford_Cases.html'
+        recent_df.sort_values('Date', ascending=False).to_html(file_name, columns=html_cols,
+                                                               index=False, float_format='%0.2f')
+
+        recent_df = recent_df.tail(self.covid_data.settings.tail_days)
         stat = recent_df['New Cases std'].iloc[-1]
+
+        stat = stat
 
         return stat
 
