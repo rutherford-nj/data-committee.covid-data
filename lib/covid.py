@@ -570,7 +570,7 @@ class MakeStats:
         return self.covid_data.settings.ewma_spn
 
     def rutherford_cases(self):
-        """ Calculate something good. Just do something stupid for now
+        """ Calculate the original rutherford raw data case spreadsheet plus 14d moving avg
 
         :return: nothing, calcs stat
         """
@@ -579,16 +579,29 @@ class MakeStats:
         recent_df = self.covid_df['Rutherford']
 
         sma_col = 'New Cases '+str(self.sma_win)+'d avg'
-        std_col = sma_col+' std'
+        # std_col = sma_col+' std'
 
         recent_df[sma_col] = sma(recent_df['New Cases'], self.sma_win)
-        recent_df[std_col] = std_dev(recent_df[sma_col], self.sma_win)
+        # recent_df[std_col] = std_dev(recent_df[sma_col], self.sma_win)
 
-        # Print to a html file
+        # Print all Rutherford data to a html file
         html_cols = ['Date', 'Total Cases', 'New Cases', sma_col]
-        file_name = 'Rutherford_Cases.html'
+        file_name = 'Rutherford_Cases_'+str(self.sma_win)+'d_SMA.html'
         recent_df.sort_values('Date', ascending=False).to_html(file_name, columns=html_cols,
                                                                index=False, float_format='%0.2f')
+
+    def today_snapshot(self):
+        """ Calculate something good. Just do something stupid for now
+
+        :return: nothing, calcs stat
+        """
+        recent_df = self.covid_df['Rutherford']
+
+        sma_col = 'New Cases '+str(self.sma_win)+'d avg'
+        # std_col = sma_col+' std'
+
+        recent_df[sma_col] = sma(recent_df['New Cases'], self.sma_win)
+        # recent_df[std_col] = std_dev(recent_df[sma_col], self.sma_win)
 
         recent_df = recent_df.tail(self.covid_data.settings.tail_days)
         stat = recent_df['New Cases std'].iloc[-1]
@@ -597,15 +610,3 @@ class MakeStats:
 
         return stat
 
-    def _make_table(self, config=None):
-        """ TODO: Print some tabular information of stats
-
-        :param config: Dict TBD
-        """
-
-        config = {} if config is None else config
-
-        if self._debug:
-            print(config)
-        else:
-            pass
