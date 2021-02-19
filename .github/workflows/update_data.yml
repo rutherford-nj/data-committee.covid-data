@@ -5,8 +5,9 @@ on:
   push:
     paths: 
       - '**.py'
+      - 'data/csv/rutherford_data.csv'
   schedule:
-    - cron: '2,22,42 * * * *'
+    - cron: '42 * * * *'
 
 jobs:
   # Build and cache the docker image from the repo.
