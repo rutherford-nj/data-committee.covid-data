@@ -608,16 +608,40 @@ class MakeStats:
         for region in defaults.PlotRegions:
             _df = self.covid_df[region].copy()
             _df = _df[today_cols]
+
+            _df['New Cases ' + str(self.sma_win) + 'd avg'] = sma(_df['New Cases'], self.sma_win)
+            _df['New Cases / 100K ' + str(self.sma_win) + 'd avg'] = sma(_df['New Cases / 100K'], self.sma_win)
+
+            y_col = 'New Cases / 100K'
+            _df['Incidence'] = incidence(_df[y_col], 14)
+
+            _x_dates, slope, spline = smooth_slope(_df, y_col, inc_win=self.sma_win, sma_win=3, spar=0.5)
+            spline = np.pad(spline, (len(_df) - len(spline), 0), 'constant', constant_values=0)
+            slope = np.pad(slope, (len(_df) - len(slope), 0), 'constant', constant_values=0)
+            _df['Incidence fitted'] = spline
+            _df['Trajectory'] = slope
+
             _df['Region'] = region
             today_df = today_df.append(_df.iloc[-1])
         today_df.set_index('Region', inplace=True)
         today_df = today_df.astype({'Total Cases': 'int32',
                                     'New Cases': 'int32'})
 
+        absolute_cols = ['Date', 'Total Cases', 'New Cases', 'New Cases ' + str(self.sma_win) + 'd avg']
+        scaled_cols = ['Date', 'Total Cases / 100K', 'New Cases / 100K',
+                       'New Cases / 100K ' + str(self.sma_win) + 'd avg']
+        stats_cols = ['Date', 'Trajectory', 'Incidence', 'Incidence fitted']
+
+        tables = {'ABS': {'COLS': absolute_cols, 'FNAME': 'cases_' + str(self.sma_win) + 'd_SMA.html'},
+                  'REL': {'COLS': scaled_cols, 'FNAME': 'cases_per_100K_' + str(self.sma_win) + 'd_SMA.html'},
+                  'STS': {'COLS': stats_cols, 'FNAME': 'case_stats.html'},
+                  }
+
         # Print today's data to a html file
-        html_cols = today_cols
-        file_name = 'today_snapshot_' + str(self.sma_win) + 'd_SMA.html'
-        formatters = {'Total Cases': '{:,}'.format,
-                      'New Cases': '{:,}'.format}
-        today_df.to_html(file_name, columns=html_cols, index_names=False, formatters=formatters,
-                         float_format="{0:,.2f}".format)
+        for tab in tables:
+            html_cols = tables[tab]['COLS']
+            file_name = tables[tab]['FNAME']
+            formatters = {'Total Cases': '{:,}'.format, 'New Cases': '{:,}'.format}
+            today_df.to_html(file_name, columns=html_cols, index_names=False,
+                             formatters=formatters, float_format="{0:,.2f}".format,
+                             justify='center', classes='table table-striped')
