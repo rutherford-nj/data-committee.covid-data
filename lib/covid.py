@@ -42,13 +42,13 @@ class Settings:
         self.settings['regions'] = self.settings.get('regions', defaults.RegionNames)
         self.settings['sma_win'] = self.settings.get('sma_win', defaults.SmoothingParams['SMA_WIN'])
         self.settings['ewma_spn'] = self.settings.get('ewma_spn', defaults.SmoothingParams['EWMA_SPAN'])
-        self.settings['tail_days'] = self.settings.get('tail_days', defaults.LastNDays)
+        self.settings['file_cutoff'] = self.settings.get('file_cutoff', defaults.CuttoffDay)
         self.settings['debug'] = self.settings.get('debug', False)
 
     @property
-    def tail_days(self):
-        """Return data_files setting"""
-        return self.settings['tail_days']
+    def file_cutoff(self):
+        """Return file dummp cutoff day"""
+        return self.settings['file_cutoff']
 
     @property
     def data_files(self):
@@ -569,11 +569,18 @@ class MakeStats:
         """EWMA Span"""
         return self.covid_data.settings.ewma_spn
 
+    @property
+    def file_cutoff(self):
+        """File dump cutoff"""
+        return self.covid_data.settings.file_cutoff
+
     def rutherford_cases(self):
         """ Calculate the original rutherford raw data case spreadsheet plus 14d moving avg
 
         :return: nothing, calcs stat
         """
+
+        cutoff = pd.to_datetime(self.file_cutoff)
 
         # New cases for Rutherford
         recent_df = self.covid_df['Rutherford']
@@ -587,26 +594,32 @@ class MakeStats:
         # Print all Rutherford data to a html file
         html_cols = ['Date', 'Total Cases', 'New Cases', sma_col]
         file_name = 'cases_Rutherford_'+str(self.sma_win)+'d_SMA.html'
-        recent_df.sort_values('Date', ascending=False).to_html(file_name, columns=html_cols,
-                                                               index=False, float_format='%0.2f')
+        table_df = recent_df[recent_df.Date >= cutoff]
+        table_df.sort_values('Date', ascending=False).to_html(file_name, columns=html_cols,
+                                                              index=False, float_format='%0.2f')
 
     def today_snapshot(self):
         """ Calculate something good. Just do something stupid for now
 
         :return: nothing, calcs stat
         """
-        recent_df = self.covid_df['Rutherford']
+        today_cols = ['Date', 'Total Cases', 'New Cases', 'Total Cases / 100K', 'New Cases / 100K']
+        today_df = pd.DataFrame()
+        for region in defaults.PlotRegions:
+            _df = self.covid_df[region].copy()
+            _df = _df[today_cols]
+            _df['Region'] = region
+            today_df = today_df.append(_df.iloc[-1])
+        today_df.set_index('Region', inplace=True)
+        today_df = today_df.astype({'Total Cases': 'int32',
+                                    'New Cases': 'int32'})
 
-        sma_col = 'New Cases '+str(self.sma_win)+'d avg'
-        # std_col = sma_col+' std'
+        # Print today's data to a html file
+        html_cols = today_cols
+        file_name = 'today_snapshot_'+str(self.sma_win)+'d_SMA.html'
+        formatters = {'Total Cases': '{:,}'.format,
+                      'New Cases': '{:,}'.format}
+        today_df.to_html(file_name, columns=html_cols, index_names=False, formatters=formatters,float_format="{0:,.2f}".format)
 
-        recent_df[sma_col] = sma(recent_df['New Cases'], self.sma_win)
-        # recent_df[std_col] = std_dev(recent_df[sma_col], self.sma_win)
 
-        recent_df = recent_df.tail(self.covid_data.settings.tail_days)
-        stat = recent_df['New Cases std'].iloc[-1]
-
-        stat = stat
-
-        return stat
 

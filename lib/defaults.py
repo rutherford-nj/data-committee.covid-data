@@ -10,8 +10,8 @@ import os
 import seaborn as sns
 from cycler import cycler
 
-# For the stats tables, only save the last N dats
-LastNDays = 14
+# For the historical data dumps, only save the from this date on
+CuttoffDay = os.environ.get('FILE_START_DATE','20200319')
 
 # Set some default params for data smoothing
 SmoothingParams = {
