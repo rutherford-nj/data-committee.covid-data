@@ -1,4 +1,4 @@
-FROM python:3.8.7-buster
+FROM python:3.8.8-buster
 
 # apt install needed packages
 RUN apt update && yes | apt install curl mawk r-base sed
