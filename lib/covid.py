@@ -42,12 +42,12 @@ class Settings:
         self.settings['regions'] = self.settings.get('regions', defaults.RegionNames)
         self.settings['sma_win'] = self.settings.get('sma_win', defaults.SmoothingParams['SMA_WIN'])
         self.settings['ewma_spn'] = self.settings.get('ewma_spn', defaults.SmoothingParams['EWMA_SPAN'])
-        self.settings['file_cutoff'] = self.settings.get('file_cutoff', defaults.CuttoffDay)
+        self.settings['file_cutoff'] = self.settings.get('file_cutoff', defaults.CutOffDay)
         self.settings['debug'] = self.settings.get('debug', False)
 
     @property
     def file_cutoff(self):
-        """Return file dummp cutoff day"""
+        """Return file dump cutoff day"""
         return self.settings['file_cutoff']
 
     @property
@@ -585,7 +585,7 @@ class MakeStats:
         # New cases for Rutherford
         recent_df = self.covid_df['Rutherford']
 
-        sma_col = 'New Cases '+str(self.sma_win)+'d avg'
+        sma_col = 'New Cases ' + str(self.sma_win) + 'd avg'
         # std_col = sma_col+' std'
 
         recent_df[sma_col] = sma(recent_df['New Cases'], self.sma_win)
@@ -593,7 +593,7 @@ class MakeStats:
 
         # Print all Rutherford data to a html file
         html_cols = ['Date', 'Total Cases', 'New Cases', sma_col]
-        file_name = 'cases_Rutherford_'+str(self.sma_win)+'d_SMA.html'
+        file_name = 'cases_Rutherford_' + str(self.sma_win) + 'd_SMA.html'
         table_df = recent_df[recent_df.Date >= cutoff]
         table_df.sort_values('Date', ascending=False).to_html(file_name, columns=html_cols,
                                                               index=False, float_format='%0.2f')
@@ -616,10 +616,8 @@ class MakeStats:
 
         # Print today's data to a html file
         html_cols = today_cols
-        file_name = 'today_snapshot_'+str(self.sma_win)+'d_SMA.html'
+        file_name = 'today_snapshot_' + str(self.sma_win) + 'd_SMA.html'
         formatters = {'Total Cases': '{:,}'.format,
                       'New Cases': '{:,}'.format}
-        today_df.to_html(file_name, columns=html_cols, index_names=False, formatters=formatters,float_format="{0:,.2f}".format)
-
-
-
+        today_df.to_html(file_name, columns=html_cols, index_names=False, formatters=formatters,
+                         float_format="{0:,.2f}".format)

@@ -11,7 +11,7 @@ import seaborn as sns
 from cycler import cycler
 
 # For the historical data dumps, only save the from this date on
-CuttoffDay = os.environ.get('FILE_START_DATE','20200319')
+CutOffDay = os.environ.get('FILE_START_DATE', '20200319')
 
 # Set some default params for data smoothing
 SmoothingParams = {
@@ -40,6 +40,7 @@ DefaultPopulations = {RegionNames['US']: 328.2E6,
                       RegionNames['NJ']: 8.882E6,
                       RegionNames['Bergen']: 932202,
                       RegionNames['Rutherford']: 18303}
+
 
 def plot_defaults():
     """ Set up ploting defaults """
