@@ -443,6 +443,7 @@ class MakePlots:
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_per_100K_' + str(self.sma_win) + 'd_SMA_7d_slope',
                        'title': 'New Cases 7d avg slope of ' + str(self.sma_win) + ' avg/100K',
+                       'ylabel': 'Case Rate [ cases/day ]',
                        'legend': defaults.PlotRegions
                        }
         self._make_plot(plot_config)
@@ -492,6 +493,7 @@ class MakePlots:
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_per_100K_3d_trajectory',
                        'title': 'New Cases/100K 3 Day trajectory',
+                       'ylabel': 'Case Rate [ incindence/day ]',
                        'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
                        }
         self._make_plot(plot_config)
@@ -513,7 +515,9 @@ class MakePlots:
 
         config['plot_fn'](ax)
 
-        ax.set_ylabel('# of cases', fontsize=20)
+        ylabel = config.get('ylabel', '# of cases')
+
+        ax.set_ylabel(ylabel, fontsize=20)
         my_fmt = mdates.DateFormatter('%b')
         ax.xaxis.set_major_formatter(my_fmt)
         plt.xticks(fontsize=16)
@@ -644,4 +648,4 @@ class MakeStats:
             formatters = {'Total Cases': '{:,}'.format, 'New Cases': '{:,}'.format}
             today_df.to_html(file_name, columns=html_cols, index_names=False,
                              formatters=formatters, float_format="{0:,.2f}".format,
-                             justify='center', classes='table table-striped')
+                             justify='center')
