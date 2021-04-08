@@ -468,7 +468,7 @@ class MakePlots:
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
-                       'fname': 'new_cases_per_100K_incindence',
+                       'fname': 'new_cases_per_100K_incidence',
                        'title': 'New Cases/100K 14d incidence (sum)',
                        'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
                        }
@@ -493,7 +493,7 @@ class MakePlots:
         plot_config = {'plot_fn': _plot_fn,
                        'fname': 'new_cases_per_100K_3d_trajectory',
                        'title': 'New Cases/100K 3 Day trajectory',
-                       'ylabel': 'Case Rate [ incindence/day ]',
+                       'ylabel': 'Case Rate [ incidence/day ]',
                        'legend': ['US', 'NJ', 'Bergen', 'Rutherford']
                        }
         self._make_plot(plot_config)
