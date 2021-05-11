@@ -595,8 +595,10 @@ class MakeStats:
         recent_df[sma_col] = sma(recent_df['New Cases'], self.sma_win)
         # recent_df[std_col] = std_dev(recent_df[sma_col], self.sma_win)
 
+        recent_df['Weekday'] = recent_df['Date'].dt.day_name()
+
         # Print all Rutherford data to a html file
-        html_cols = ['Date', 'Total Cases', 'New Cases', sma_col]
+        html_cols = ['Date', 'Weekday', 'Total Cases', 'New Cases', sma_col]
         file_name = 'cases_Rutherford_' + str(self.sma_win) + 'd_SMA.html'
         table_df = recent_df[recent_df.Date >= cutoff]
         table_df.sort_values('Date', ascending=False).to_html(file_name, columns=html_cols,
