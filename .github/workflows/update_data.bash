@@ -5,9 +5,6 @@ echo "::group::Fetch Data"
 docker run -v `pwd`:/work --entrypoint="/work/data/fetch.sh" rutherford-covid-image
 echo "::endgroup::"
 
-# Ensure rutherford data is the CSV, not an error page.
-grep "Date,Total Cases,New Cases" data/csv/rutherford_data.csv || exit 0
-
 # Setup local git config.
 git config --global user.name github-actions
 git config --global user.email github-actions@github.com
