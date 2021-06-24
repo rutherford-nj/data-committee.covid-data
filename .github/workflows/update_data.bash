@@ -17,6 +17,7 @@ if [[ "$currenttime" > "21:00" ]]; then
   if grep -q $today ./data/csv/rutherford_data.csv; then
     echo "today's data already recorded"
   else
+    echo "no cases reported today, recording 0"
     echo $today,$prev_cases >> ./data/csv/rutherford_data.csv
   fi
 else
