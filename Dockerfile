@@ -1,4 +1,4 @@
-FROM python:3.8.12-slim-buster
+FROM python:3.8.12-slim-bullseye
 
 # apt install needed packages
 RUN apt update && yes | apt install curl mawk r-base sed
