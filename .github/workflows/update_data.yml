@@ -15,23 +15,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
-    
-    - id: cache-docker
-      uses: actions/cache@v2
-      with:
-        path: /tmp/docker-save
-        key: docker-save-${{ hashFiles('Dockerfile', 'requirements.txt') }}
-    
-    - name: Load docker layers from cache
-      run: docker load -i /tmp/docker-save/snapshot.tar || true
-      if: steps.cache-docker.outputs.cache-hit == 'true'
-    
+        
     - name: Build docker image
-      run: docker build . -t rutherford-covid-image --cache-from=rutherford-covid-image-cache
-    
-    - name: Tag image for caching
-      run: docker tag rutherford-covid-image rutherford-covid-image-cache && mkdir -p /tmp/docker-save && docker save rutherford-covid-image-cache -o /tmp/docker-save/snapshot.tar && ls -lh /tmp/docker-save || true
-      if: always() && steps.cache-docker.outputs.cache-hit != 'true'
-    
+      run: docker build . -t rutherford-covid-image
+        
     - name: Update data and charts
       run: ./.github/workflows/update_data.bash
