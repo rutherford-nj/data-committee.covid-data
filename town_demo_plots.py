@@ -6,16 +6,48 @@ This should be folded into the main lib workflow as an option, eventually
 THIS CAN ONLY BE RUN FROM MY LAPTOP SINCE THE DATA IS IN KEYBASE
 
 Greg Recine <greg@gregrecine.com> Jan 28 2021
-"""
-import os
 
+The important ENVs to set are: YEAR, DEMO_DATA, CASES_FILE
+
+Example: YEAR='2020' CASES_FILE='2020.csv' DEATHS_FILE='2020-deaths.csv' python ./town_demo_plots.py
+
+Env var config input:
+    YEAR [str] = calendar year you're running for (used for plot title and quarterly plots)
+    PLT_FMT [str] = 'jpg' or 'svg
+    DPI [int] = plot dpi
+    DEMO_DIR [str] = where your demo data is located
+    CASES_FILE [str] = name of the csv file for cases
+    DEATHS_FILE [str] = name of the csv file for deaths
+    OUT_DIR [str] = output directory
+    QUARTERS [bool] = Do plots for quarterly demographics
+    PLOT_TO_SCREEN [book] = Show plots on screen as processing
+"""
+
+import os
 import matplotlib.pyplot as plt
 import pandas as pd
 
-DEMO_DIR = os.path.join('/','Users','greg','Working', 'covid_demographics/')
-CASES_FILE = '2021.csv'
-# DEATHS_FILE = '2020-deaths.csv'
+config = {
+    'YEAR': '2021',
+    'PLT_FMT': 'svg',
+    'DPI': 400,
+    'DEMO_DIR': os.path.join('/','Users','greg','Working', 'covid_demographics/'),
+    'CASES_FILE': None,
+    'DEATHS_FILE': None,
+    'OUT_DIR': os.path.join(os.getcwd(),'docs','demographics'),
+    'QUARTERS': False,
+    'PLOT_TO_SCREEN': False,
+}
 
+YEAR = os.environ.get('YEAR', config['YEAR'])
+PLT_FMT = os.environ.get('PLT_FMT', config['PLT_FMT'])
+DPI = os.environ.get('DPI', config['DPI'])
+DEMO_DIR = os.environ.get('DEMO_DIR', config['DEMO_DIR'])
+CASES_FILE = os.environ.get('CASES_FILE', config['CASES_FILE'])
+DEATHS_FILE = os.environ.get('DEATHS_FILE', config['DEATHS_FILE'])
+OUT_DIR = os.environ.get('OUT_DIR', config['OUT_DIR'])
+QUARTERS = os.environ.get('QUARTERS', config['QUARTERS'])
+PLOT_TO_SCREEN = os.environ.get('PLOT_TO_SCREEN', config['PLOT_TO_SCREEN'])
 
 def get_data(demo_fname):
 
@@ -45,8 +77,10 @@ def pie_chart(sizes, labels, colors, title=None):
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
     plt.title(title, fontsize=14)
     fname = title.replace(" - ", "_").replace(" ", "_")
-    plt.savefig(fname + ".svg", format="svg", dpi=400)
-    plt.show()
+    plt.savefig(fname + "."+PLT_FMT, format=PLT_FMT, dpi=DPI)
+    if PLOT_TO_SCREEN:
+        plt.show()
+    plt.close()
 
 
 def gender_count(df):
@@ -95,8 +129,10 @@ def hist_chart(df, age_bins, labels, title, offset):
                        horizontalalignment="center")
 
     fname = title.replace(" - ", "_").replace(" ", "_")
-    plt.savefig(fname + ".svg", format="svg", dpi=400)
-    plt.show()
+    plt.savefig(fname + "."+PLT_FMT, format=PLT_FMT, dpi=DPI)
+    if PLOT_TO_SCREEN:
+        plt.show()
+    plt.close()
 
 
 def cook_bars(_bars, offset=4.0):
@@ -110,48 +146,52 @@ def cook_bars(_bars, offset=4.0):
                    offset=offset)
 
 
-# Hardwired
-os.chdir('docs/demographics')
+def make_charts(df, flavor, bar_offset=4.0, age=19):
+    # Gender pie charts
+    pies = {YEAR+" COVID "+flavor+" by Gender": df,
+            YEAR+" COVID "+flavor+" by Gender - 18 and Younger": df[df['Age'] < age],
+            YEAR+" COVID "+flavor+" by Gender - Over 18": df[df['Age'] >= age]}
+    bake_pies(pies)
 
-# ========================= GET DATA
-
-# Get Case Data
-demo_case_df = get_data(CASES_FILE)
-# Break up into 18 and under, and over 18
-demo_case_df_minors = demo_case_df[demo_case_df.Age < 19]
-demo_case_df_adults = demo_case_df[demo_case_df.Age >= 19]
-
-# # Get Death Data
-# demo_death_df = get_data(DEATHS_FILE)
-# # Break up into 18 and under, and over 18
-# demo_death_df_minors = demo_death_df[demo_death_df.Age < 19]
-# demo_death_df_adults = demo_death_df[demo_death_df.Age >= 19]
-
-# ========================= CASE PLOTS
-
-# Gender pie charts
-pies = {"2021 COVID Cases by Gender": demo_case_df,
-        "2021 COVID Cases by Gender - 18 and Younger": demo_case_df_minors,
-        "2021 COVID Cases by Gender - Over 18": demo_case_df_adults}
-bake_pies(pies)
-
-# Histogram with NJ age bins
-bars = {"2021 COVID Cases by Age Group": demo_case_df,
-        "2021 COVID Cases by Age Group - Males": demo_case_df[demo_case_df.Gender == 'M'],
-        "2021 COVID Cases by Age Group - Females": demo_case_df[demo_case_df.Gender == 'F']}
-cook_bars(bars)
+    # Histogram with NJ age bins
+    bars = {YEAR+" COVID "+flavor+" by Age Group": df,
+            YEAR+" COVID "+flavor+" by Age Group - Males": df[df['Gender'] == 'M'],
+            YEAR+" COVID "+flavor+" by Age Group - Females": df[df['Gender'] == 'F']}
+    cook_bars(bars, bar_offset)
 
 
-# ========================= DEATH PLOTS
+def quarterly_plots(df, year):
+    # Quarterly Plots
+    quarters = {
+        'Q1': (pd.Timestamp(year, 1, 1), pd.Timestamp(year, 4, 1)),
+        'Q2': (pd.Timestamp(year, 4, 1), pd.Timestamp(year, 7, 1)),
+        'Q3': (pd.Timestamp(year, 7, 1), pd.Timestamp(year, 10, 1)),
+        'Q4': (pd.Timestamp(year, 10, 1), pd.Timestamp(year+1, 1, 1)),
+    }
+    bar_title = str(year)+" COVID Cases by Age Group "
+    bars = {
+        bar_title + q: df[(df['Date']>=quarters[q][0]) & (df['Date']<quarters[q][1])]
+        for q in quarters
+    }
+    cook_bars(bars)
 
-# # Gender pie charts
-# pies = {"2020 COVID Deaths by Gender": demo_death_df,
-#         "2020 COVID Deaths by Gender - 18 and Younger": demo_death_df_minors,
-#         "2020 COVID Deaths by Gender - Over 18": demo_death_df_adults}
-# bake_pies(pies)
-#
-# # Histogram with NJ age bins
-# bars = {"2020 COVID Deaths by Age Group": demo_death_df,
-#         "2020 COVID Deaths by Age Group - Males": demo_death_df[demo_death_df.Gender == 'M'],
-#         "2020 COVID Deaths by Age Group - Females": demo_death_df[demo_death_df.Gender == 'F']}
-# cook_bars(bars, 0.2)
+
+def main():
+    # Hardwired -- fix this
+    os.chdir(OUT_DIR)
+
+    # CASE PLOTS
+    if CASES_FILE is not None:
+        case_df = get_data(CASES_FILE)
+
+        make_charts(case_df, flavor='Cases')
+        
+        if QUARTERS:
+            quarterly_plots(case_df, int(YEAR))
+
+    #DEATH PLOTS
+    if DEATHS_FILE is not None:
+        make_charts(get_data(DEATHS_FILE), flavor='Deaths', bar_offset=0.2)
+
+if __name__ == "__main__":
+    main()
