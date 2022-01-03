@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Library to get covid demographic data for the 07070 and display pretty plots and tables.
 
