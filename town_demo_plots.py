@@ -20,7 +20,7 @@ Env var config input:
     DEATHS_FILE [str] = name of the csv file for deaths
     OUT_DIR [str] = output directory
     QUARTERS [bool] = Do plots for quarterly demographics
-    PLOT_TO_SCREEN [book] = Show plots on screen as processing
+    PLOT_TO_SCREEN [bool] = Show plots on screen as processing
 """
 
 import os
