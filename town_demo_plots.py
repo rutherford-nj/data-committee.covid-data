@@ -12,10 +12,9 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 
-KEYBASE_ROOT = os.path.join('/', 'Volumes')
-DEMO_DIR = os.path.join(KEYBASE_ROOT, 'Keybase', 'team', 'rutherford_nj.data_committee', 'covid_demographics/')
-CASES_FILE = '2020.csv'
-DEATHS_FILE = '2020-deaths.csv'
+DEMO_DIR = os.path.join('/','Users','greg','Working', 'covid_demographics/')
+CASES_FILE = '2021.csv'
+# DEATHS_FILE = '2020-deaths.csv'
 
 
 def get_data(demo_fname):
@@ -122,75 +121,37 @@ demo_case_df = get_data(CASES_FILE)
 demo_case_df_minors = demo_case_df[demo_case_df.Age < 19]
 demo_case_df_adults = demo_case_df[demo_case_df.Age >= 19]
 
-# Get Death Data
-demo_death_df = get_data(DEATHS_FILE)
-# Break up into 18 and under, and over 18
-demo_death_df_minors = demo_death_df[demo_death_df.Age < 19]
-demo_death_df_adults = demo_death_df[demo_death_df.Age >= 19]
+# # Get Death Data
+# demo_death_df = get_data(DEATHS_FILE)
+# # Break up into 18 and under, and over 18
+# demo_death_df_minors = demo_death_df[demo_death_df.Age < 19]
+# demo_death_df_adults = demo_death_df[demo_death_df.Age >= 19]
 
 # ========================= CASE PLOTS
 
 # Gender pie charts
-pies = {"2020 COVID Cases by Gender": demo_case_df,
-        "2020 COVID Cases by Gender - 18 and Younger": demo_case_df_minors,
-        "2020 COVID Cases by Gender - Over 18": demo_case_df_adults}
+pies = {"2021 COVID Cases by Gender": demo_case_df,
+        "2021 COVID Cases by Gender - 18 and Younger": demo_case_df_minors,
+        "2021 COVID Cases by Gender - Over 18": demo_case_df_adults}
 bake_pies(pies)
 
 # Histogram with NJ age bins
-bars = {"2020 COVID Cases by Age Group": demo_case_df,
-        "2020 COVID Cases by Age Group - Males": demo_case_df[demo_case_df.Gender == 'M'],
-        "2020 COVID Cases by Age Group - Females": demo_case_df[demo_case_df.Gender == 'F']}
+bars = {"2021 COVID Cases by Age Group": demo_case_df,
+        "2021 COVID Cases by Age Group - Males": demo_case_df[demo_case_df.Gender == 'M'],
+        "2021 COVID Cases by Age Group - Females": demo_case_df[demo_case_df.Gender == 'F']}
 cook_bars(bars)
 
 
 # ========================= DEATH PLOTS
 
-# Gender pie charts
-pies = {"2020 COVID Deaths by Gender": demo_death_df,
-        "2020 COVID Deaths by Gender - 18 and Younger": demo_death_df_minors,
-        "2020 COVID Deaths by Gender - Over 18": demo_death_df_adults}
-bake_pies(pies)
-
-# Histogram with NJ age bins
-bars = {"2020 COVID Deaths by Age Group": demo_death_df,
-        "2020 COVID Deaths by Age Group - Males": demo_death_df[demo_death_df.Gender == 'M'],
-        "2020 COVID Deaths by Age Group - Females": demo_death_df[demo_death_df.Gender == 'F']}
-cook_bars(bars, 0.2)
-
-# #############################
-# fig = plt.figure(figsize=(13, 9))
-# ax = fig.add_subplot(1, 1, 1)
+# # Gender pie charts
+# pies = {"2020 COVID Deaths by Gender": demo_death_df,
+#         "2020 COVID Deaths by Gender - 18 and Younger": demo_death_df_minors,
+#         "2020 COVID Deaths by Gender - Over 18": demo_death_df_adults}
+# bake_pies(pies)
 #
-# # age_config = {'minors': {'data': demo_df_minors, 'legend': '18 and under', 'plt_opts': }}
-#
-# for df in [demo_df_minors,demo_df_adults]:
-#     _df = pd.DataFrame()
-#     rng = pd.date_range('2020-01-01', '2020-12-31', freq='D')
-#     _df = pd.DataFrame(index=rng)
-#
-#     _df['New Cases'] = df.groupby('Date').Age.count()
-#     _df = _df.fillna(0)
-#
-#     _df['sma'] = _df['New Cases'].rolling(14, min_periods=0).mean()
-#     ax.plot(_df.index, _df['sma'])
-#     ax.stem(_df.index, _df['New Cases'], linefmt='x:', markerfmt=' ', basefmt=' ')
-#
-# ax.set_ylabel('# of cases', fontsize=20)
-# my_fmt = mdates.DateFormatter('%b')
-# ax.xaxis.set_major_formatter(my_fmt)
-# plt.xticks(fontsize=16)
-# plt.yticks(fontsize=16)
-# 
-# plt.title('Cases by age over 2020', fontsize=24)
-# plt.legend(['minors','adults','minors','adults'], fontsize=16)
-# plt.grid()
-#
-# plt.show()
-# #
-# # all_mean = demo_df.mean()
-# # minor_mean = demo_df.mean()
-# # adult_mean = demo_df.mean()
-# #
-# # all_std = demo_df.std()
-# # minor_std = demo_df.std()
-# # adult_std = demo_df.std()
+# # Histogram with NJ age bins
+# bars = {"2020 COVID Deaths by Age Group": demo_death_df,
+#         "2020 COVID Deaths by Age Group - Males": demo_death_df[demo_death_df.Gender == 'M'],
+#         "2020 COVID Deaths by Age Group - Females": demo_death_df[demo_death_df.Gender == 'F']}
+# cook_bars(bars, 0.2)
