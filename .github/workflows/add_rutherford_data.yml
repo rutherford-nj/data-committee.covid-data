@@ -12,9 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    
     - name: Update Rutherford Count
-      working-directory: ./data
       run: |
-        python3 update_rutherford.py ${{ github.event.inputs.count }}
-        cd ..
-        ./.github/workflows/update_data.bash
+        ./.github/workflows/add_rutherford_data.bash ${{ github.event.inputs.count }}
+
+    - name: Build docker image
+      run: docker build . -t rutherford-covid-image
+        
+    - name: Update data and charts
+      run: ./.github/workflows/update_data.bash
