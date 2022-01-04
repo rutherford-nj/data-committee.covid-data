@@ -1,0 +1,20 @@
+name: Update Rutherford Count
+
+on: 
+  workflow_dispatch:
+    inputs:
+      count:
+        description: 'Count of new cases for today'     
+        required: true
+        
+jobs:
+  addData:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Update Rutherford Count
+      working-directory: ./data
+      run: |
+        python3 update_rutherford.py ${{ github.event.inputs.count }}
+        cd ..
+        ./.github/workflows/update_data.bash
