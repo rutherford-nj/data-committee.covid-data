@@ -1,6 +1,10 @@
 name: Update Data
 
 on:
+  workflow_run:
+    workflows: ["Update Rutherford Count"]
+    types: 
+      - completed
   workflow_dispatch:
   push:
     paths: 

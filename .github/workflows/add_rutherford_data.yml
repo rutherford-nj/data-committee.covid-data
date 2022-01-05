@@ -14,11 +14,4 @@ jobs:
     - uses: actions/checkout@v2
     
     - name: Update Rutherford Count
-      run: |
-        ./.github/workflows/add_rutherford_data.bash ${{ github.event.inputs.count }}
-
-    - name: Build docker image
-      run: docker build . -t rutherford-covid-image
-        
-    - name: Update data and charts
-      run: ./.github/workflows/update_data.bash
+      run: ./.github/workflows/add_rutherford_data.bash ${{ github.event.inputs.count }}
