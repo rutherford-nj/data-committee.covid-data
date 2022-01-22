@@ -620,8 +620,8 @@ class MakeStats:
         sma_col = 'New Cases ' + str(self.sma_win) + 'd avg'
         # std_col = sma_col+' std'
 
-        recent_df[half_sma_col] = sma(recent_df['New Cases'], self.sma_win)
-        recent_df[sma_col] = sma(recent_df['New Cases'], half_sma)
+        recent_df[half_sma_col] = sma(recent_df['New Cases'], half_sma)
+        recent_df[sma_col] = sma(recent_df['New Cases'], self.sma_win)
         # recent_df[std_col] = std_dev(recent_df[sma_col], self.sma_win)
 
         recent_df['Weekday'] = recent_df['Date'].dt.day_name()
