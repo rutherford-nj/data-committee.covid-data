@@ -25,9 +25,9 @@ MakeThesePlots = [
 
 CalcTheseStats = [
     covid.MakeStats.rutherford_cases,           # Total, New, and SMA cases for town
+    covid.MakeStats.rutherford_cases_plus_half_SMA,           # Total, New, and SMA cases for town (and SMA/2)
     covid.MakeStats.today_snapshot,             # Today's numbers
 ]
-
 
 def main():
     """

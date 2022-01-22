@@ -579,7 +579,7 @@ class MakeStats:
         return self.covid_data.settings.file_cutoff
 
     def rutherford_cases(self):
-        """ Calculate the original rutherford raw data case spreadsheet plus 14d moving avg
+        """ Calculate the original rutherford raw data case spreadsheet plus N day moving avg
 
         :return: nothing, calcs stat
         """
@@ -604,6 +604,34 @@ class MakeStats:
         table_df.sort_values('Date', ascending=False).to_html(file_name, columns=html_cols,
                                                               index=False, float_format='%0.2f')
 
+    def rutherford_cases_plus_half_SMA(self):
+        """ Calculate the original rutherford raw data case spreadsheet plus N day moving avg, and a column with N/2
+
+        :return: nothing, calcs stat
+        """
+
+        cutoff = pd.to_datetime(self.file_cutoff)
+
+        # New cases for Rutherford
+        recent_df = self.covid_df['Rutherford']
+
+        half_sma = int(self.sma_win/2.0)
+        half_sma_col = 'New Cases ' + str(half_sma) + 'd avg'
+        sma_col = 'New Cases ' + str(self.sma_win) + 'd avg'
+        # std_col = sma_col+' std'
+
+        recent_df[half_sma_col] = sma(recent_df['New Cases'], self.sma_win)
+        recent_df[sma_col] = sma(recent_df['New Cases'], half_sma)
+        # recent_df[std_col] = std_dev(recent_df[sma_col], self.sma_win)
+
+        recent_df['Weekday'] = recent_df['Date'].dt.day_name()
+
+        # Print all Rutherford data to a html file
+        html_cols = ['Date', 'Weekday', 'Total Cases', 'New Cases', half_sma_col, sma_col]
+        file_name = 'cases_Rutherford_' + str(self.sma_win) + 'd_SMA_and_' + str(half_sma) + 'd_SMA.html'
+        table_df = recent_df[recent_df.Date >= cutoff]
+        table_df.sort_values('Date', ascending=False).to_html(file_name, columns=html_cols,
+                                                              index=False, float_format='%0.2f')
     def today_snapshot(self):
         """ Calculate something good. Just do something stupid for now
 
