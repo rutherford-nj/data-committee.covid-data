@@ -6,12 +6,6 @@ on:
     types: 
       - completed
   workflow_dispatch:
-  push:
-    paths: 
-      - '**.py'
-      - 'data/csv/rutherford_data.csv'
-  schedule:
-    - cron: '42 * * * *'
 
 jobs:
   update_data_and_charts:

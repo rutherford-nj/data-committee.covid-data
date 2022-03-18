@@ -11,9 +11,6 @@ echo "::endgroup::"
 git config --global user.name github-actions
 git config --global user.email github-actions@github.com
 
-# Update Rutherford data with zero cases unless cases were recorded before 9pm.
-.github/workflows/zero_rutherford.bash
-
 # Commit data changes. For scheduled runs, bail out of the workflow if there hasn't been a change in the data.
 timestamp=$(TZ=America/New_York date)
 if [[ "${GITHUB_EVENT_NAME}" == "schedule" ]]; then
