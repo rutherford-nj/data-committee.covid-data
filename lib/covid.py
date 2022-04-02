@@ -36,13 +36,20 @@ class Settings:
         self.settings = {} if settings is None else settings
 
         # Set default settings
-        self.settings['data_files'] = self.settings.get('data_files', defaults.DataFileNames)
-        self.settings['data_dir'] = self.settings.get('data_dir', os.path.join(os.getcwd(), 'data', 'csv'))
-        self.settings['population'] = self.settings.get('population', defaults.DefaultPopulations)
-        self.settings['regions'] = self.settings.get('regions', defaults.RegionNames)
-        self.settings['sma_win'] = self.settings.get('sma_win', defaults.SmoothingParams['SMA_WIN'])
-        self.settings['ewma_spn'] = self.settings.get('ewma_spn', defaults.SmoothingParams['EWMA_SPAN'])
-        self.settings['file_cutoff'] = self.settings.get('file_cutoff', defaults.CutOffDay)
+        self.settings['data_files'] = self.settings.get(
+            'data_files', defaults.DataFileNames)
+        self.settings['data_dir'] = self.settings.get(
+            'data_dir', os.path.join(os.getcwd(), 'data', 'csv'))
+        self.settings['population'] = self.settings.get(
+            'population', defaults.DefaultPopulations)
+        self.settings['regions'] = self.settings.get(
+            'regions', defaults.RegionNames)
+        self.settings['sma_win'] = self.settings.get(
+            'sma_win', defaults.SmoothingParams['SMA_WIN'])
+        self.settings['ewma_spn'] = self.settings.get(
+            'ewma_spn', defaults.SmoothingParams['EWMA_SPAN'])
+        self.settings['file_cutoff'] = self.settings.get(
+            'file_cutoff', defaults.CutOffDay)
         self.settings['debug'] = self.settings.get('debug', False)
 
     @property
@@ -110,7 +117,8 @@ class GetData:
             # Get normalized cases (per 100K pop)
             for key in regions:
                 region = regions[key]
-                self.data_df_dict[region] = self.per_capita(self.data_df_dict[region], region)
+                self.data_df_dict[region] = self.per_capita(
+                    self.data_df_dict[region], region)
 
     def get_data(self):
         """ Grab data from the csv files and pop into a pandas dataframe
@@ -124,9 +132,11 @@ class GetData:
 
         data_df_dict = {}
         for key in data_files.keys():
-            _df = pd.read_csv(os.path.join(data_dir, data_files[key]), parse_dates=[0])
+            _df = pd.read_csv(os.path.join(
+                data_dir, data_files[key]), parse_dates=[0])
             if key != regions['Rutherford']:
-                _df['New Cases'] = _df['Total Cases'].diff().reset_index(level=0, drop=True)
+                _df['New Cases'] = _df['Total Cases'].diff(
+                ).reset_index(level=0, drop=True)
                 _df.loc[_df['New Cases'].isna(), 'New Cases'] = _df['Total Cases']
 
             data_df_dict[key] = _df.sort_values('Date')
@@ -149,7 +159,8 @@ class GetData:
             _df_min_dt = _df['Date'].min()
 
             if min_date != _df_min_dt:
-                new_dates = pd.date_range(start=min_date, end=_df_min_dt - pd.DateOffset(1))
+                new_dates = pd.date_range(
+                    start=min_date, end=_df_min_dt - pd.DateOffset(1))
                 _df = _df.append(pd.DataFrame({'Date': new_dates,
                                                'Total Cases': [0] * len(new_dates),
                                                'New Cases': [0] * len(new_dates)}))
@@ -164,9 +175,11 @@ class GetData:
         """
         population = self.settings.population[region]
 
-        covid_df['New Cases / 100K'] = covid_df['New Cases'] * (1.0E5 / population)
+        covid_df['New Cases / 100K'] = covid_df['New Cases'] * \
+            (1.0E5 / population)
 
-        covid_df['Total Cases / 100K'] = covid_df['Total Cases'] * (1.0E5 / population)
+        covid_df['Total Cases / 100K'] = covid_df['Total Cases'] * \
+            (1.0E5 / population)
 
         return covid_df
 
@@ -225,9 +238,11 @@ class MakePlots:
             cases_pos = _df['New Cases sma'] + _df['New Cases std']
             cases_neg = _df['New Cases sma'] - _df['New Cases std']
 
-            ax.fill_between(_df['Date'], cases_neg, cases_pos, alpha=0.2, facecolor='#089FFF')
+            ax.fill_between(_df['Date'], cases_neg, cases_pos,
+                            alpha=0.2, facecolor='#089FFF')
             ax.plot(_df['Date'], _df['New Cases sma'])
-            ax.stem(_df['Date'], _df['New Cases'], linefmt='x:', markerfmt=' ', basefmt=' ')
+            ax.stem(_df['Date'], _df['New Cases'],
+                    linefmt='x:', markerfmt=' ', basefmt=' ')
 
             return ax
 
@@ -254,14 +269,17 @@ class MakePlots:
             _df['New Cases sma'] = sma(_df['New Cases'], self.sma_win)
 
             y_col = 'New Cases'
-            _x_dates, _slope, spline = smooth_slope(_df, y_col, inc_win=self.sma_win, sma_win=3, spar=0.5)
-            spline = np.pad(spline, (len(_df) - len(spline), 0), 'constant', constant_values=0)
+            _x_dates, _slope, spline = smooth_slope(
+                _df, y_col, inc_win=self.sma_win, sma_win=3, spar=0.5)
+            spline = np.pad(spline, (len(_df) - len(spline), 0),
+                            'constant', constant_values=0)
             _df['New Cases fitted'] = spline / self.sma_win
 
             cases_pos = _df['New Cases sma'] + _df['New Cases std']
             cases_neg = _df['New Cases sma'] - _df['New Cases std']
 
-            ax.fill_between(_df['Date'], cases_neg, cases_pos, alpha=0.2, facecolor='#089FFF')
+            ax.fill_between(_df['Date'], cases_neg, cases_pos,
+                            alpha=0.2, facecolor='#089FFF')
             ax.plot(_df['Date'], _df['New Cases fitted'])
             ax.plot(_df['Date'], _df['New Cases'], 'bo', mfc='none')
 
@@ -299,7 +317,8 @@ class MakePlots:
             cases_pos = _df['Total Cases'] + _df['Total Cases std']
             cases_neg = _df['Total Cases'] - _df['Total Cases std']
 
-            ax.fill_between(_df['Date'], cases_neg, cases_pos, alpha=0.2, facecolor='#089FFF')
+            ax.fill_between(_df['Date'], cases_neg, cases_pos,
+                            alpha=0.2, facecolor='#089FFF')
             # ax.plot(_df['Date'], _df['Total Cases sma'])
             ax.plot(_df['Date'], _df['Total Cases'], 'b-')
 
@@ -325,7 +344,8 @@ class MakePlots:
 
             for region in regions:
                 _df = self.covid_df[region]
-                ax.plot(_df['Date'], sma(_df['New Cases / 100K'], self.sma_win))
+                ax.plot(_df['Date'], sma(
+                    _df['New Cases / 100K'], self.sma_win))
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
@@ -346,7 +366,8 @@ class MakePlots:
 
             for region in regions:
                 _df = self.covid_df[region]
-                ax.plot(_df['Date'], ewma(_df['New Cases / 100K'], self.ewma_spn))
+                ax.plot(_df['Date'], ewma(
+                    _df['New Cases / 100K'], self.ewma_spn))
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
@@ -388,7 +409,8 @@ class MakePlots:
 
             for region in regions:
                 _df = self.covid_df[region]
-                ax.plot(_df['Date'], sma(_df['Total Cases / 100K'], self.sma_win))
+                ax.plot(_df['Date'], sma(
+                    _df['Total Cases / 100K'], self.sma_win))
             return ax
 
         plot_config = {'plot_fn': _plot_fn,
@@ -485,7 +507,8 @@ class MakePlots:
             y_col = 'New Cases / 100K'
             for region in regions:
                 _df = self.covid_df[region]
-                x_dates, slope, _ = smooth_slope(_df, y_col, inc_win=14, sma_win=3, spar=0.5)
+                x_dates, slope, _ = smooth_slope(
+                    _df, y_col, inc_win=14, sma_win=3, spar=0.5)
                 ax.plot(x_dates, slope)
             ax.axhline(0, color='red', linestyle=':')
             return ax
@@ -627,31 +650,40 @@ class MakeStats:
         recent_df['Weekday'] = recent_df['Date'].dt.day_name()
 
         # Print all Rutherford data to a html file
-        html_cols = ['Date', 'Weekday', 'Total Cases', 'New Cases', half_sma_col, sma_col]
-        file_name = 'cases_Rutherford_' + str(self.sma_win) + 'd_SMA_and_' + str(half_sma) + 'd_SMA.html'
+        html_cols = ['Date', 'Weekday', 'Total Cases',
+                     'New Cases', half_sma_col, sma_col]
+        file_name = 'cases_Rutherford_' + \
+            str(self.sma_win) + 'd_SMA_and_' + str(half_sma) + 'd_SMA.html'
         table_df = recent_df[recent_df.Date >= cutoff]
         table_df.sort_values('Date', ascending=False).to_html(file_name, columns=html_cols,
                                                               index=False, float_format='%0.2f')
+
     def today_snapshot(self):
         """ Calculate something good. Just do something stupid for now
 
         :return: nothing, calcs stat
         """
-        today_cols = ['Date', 'Total Cases', 'New Cases', 'Total Cases / 100K', 'New Cases / 100K']
+        today_cols = ['Date', 'Total Cases', 'New Cases',
+                      'Total Cases / 100K', 'New Cases / 100K']
         today_df = pd.DataFrame()
         for region in defaults.PlotRegions:
             _df = self.covid_df[region].copy()
             _df = _df[today_cols]
 
-            _df['New Cases ' + str(self.sma_win) + 'd avg'] = sma(_df['New Cases'], self.sma_win)
-            _df['New Cases / 100K ' + str(self.sma_win) + 'd avg'] = sma(_df['New Cases / 100K'], self.sma_win)
+            _df['New Cases ' + str(self.sma_win) +
+                'd avg'] = sma(_df['New Cases'], self.sma_win)
+            _df['New Cases / 100K ' +
+                str(self.sma_win) + 'd avg'] = sma(_df['New Cases / 100K'], self.sma_win)
 
             y_col = 'New Cases / 100K'
             _df['Incidence'] = incidence(_df[y_col], 14)
 
-            _x_dates, slope, spline = smooth_slope(_df, y_col, inc_win=self.sma_win, sma_win=3, spar=0.5)
-            spline = np.pad(spline, (len(_df) - len(spline), 0), 'constant', constant_values=0)
-            slope = np.pad(slope, (len(_df) - len(slope), 0), 'constant', constant_values=0)
+            _x_dates, slope, spline = smooth_slope(
+                _df, y_col, inc_win=self.sma_win, sma_win=3, spar=0.5)
+            spline = np.pad(spline, (len(_df) - len(spline), 0),
+                            'constant', constant_values=0)
+            slope = np.pad(slope, (len(_df) - len(slope), 0),
+                           'constant', constant_values=0)
             _df['Incidence fitted'] = spline
             _df['Trajectory'] = slope
 
@@ -661,7 +693,8 @@ class MakeStats:
         today_df = today_df.astype({'Total Cases': 'int32',
                                     'New Cases': 'int32'})
 
-        absolute_cols = ['Date', 'Total Cases', 'New Cases', 'New Cases ' + str(self.sma_win) + 'd avg']
+        absolute_cols = ['Date', 'Total Cases', 'New Cases',
+                         'New Cases ' + str(self.sma_win) + 'd avg']
         scaled_cols = ['Date', 'Total Cases / 100K', 'New Cases / 100K',
                        'New Cases / 100K ' + str(self.sma_win) + 'd avg']
         stats_cols = ['Date', 'Trajectory', 'Incidence', 'Incidence fitted']
@@ -675,7 +708,8 @@ class MakeStats:
         for tab in tables:
             html_cols = tables[tab]['COLS']
             file_name = tables[tab]['FNAME']
-            formatters = {'Total Cases': '{:,}'.format, 'New Cases': '{:,}'.format}
+            formatters = {'Total Cases': '{:,}'.format,
+                          'New Cases': '{:,}'.format}
             today_df.to_html(file_name, columns=html_cols, index_names=False,
                              formatters=formatters, float_format="{0:,.2f}".format,
                              justify='center')
