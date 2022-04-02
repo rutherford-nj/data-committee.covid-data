@@ -675,6 +675,9 @@ class MakeStats:
             _df['New Cases / 100K ' +
                 str(self.sma_win) + 'd avg'] = sma(_df['New Cases / 100K'], self.sma_win)
 
+            if region == 'Rutherford':
+                _df['New Cases / 100K'] = _df['New Cases / 100K'] / 7
+
             y_col = 'New Cases / 100K'
             _df['Incidence'] = incidence(_df[y_col], 14)
 
