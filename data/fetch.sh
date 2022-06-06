@@ -7,9 +7,13 @@ cd /work
 
 # All counties in NJ
 echo "Date,County,State,FIPS,Total Cases,Total Deaths" > data/csv/nytimes_nj_counties.csv
-curl https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv | \
+curl https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties-2020.csv | \
   awk -F, '$3=="New Jersey"' >> data/csv/nytimes_nj_counties.csv
-
+curl https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties-2021.csv | \
+  awk -F, '$3=="New Jersey"' >> data/csv/nytimes_nj_counties.csv
+curl https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties-2022.csv | \
+  awk -F, '$3=="New Jersey"' >> data/csv/nytimes_nj_counties.csv
+  
 # All US states and territories
 echo "Date,State,FIPS,Total Cases,Total Deaths" > data/csv/nytimes_us_states.csv
 curl https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv | \
